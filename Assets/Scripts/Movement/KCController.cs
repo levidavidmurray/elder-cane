@@ -1,14 +1,32 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System.Collections.Generic;
 using KinematicCharacterController;
-using System;
+using UnityEngine;
 
-namespace KinematicCharacterController.Examples
-{
+namespace EC.Core {
     public enum CharacterState
     {
         Default,
+        Idle,
+        Walk,
+        Run,
+        Jump,
+        Fall,
+        Roll,
+        Attack,
+    }
+
+    public struct PlayerInput {
+        public Vector2 MoveInput;
+        public Quaternion CameraRotation;
+        public bool JumpDown;
+        public bool RollDown;
+        public bool CrouchDown;
+        public bool CrouchUp;
+    }
+
+    public struct AIInput {
+        public Vector3 MoveVector;
+        public Vector3 LookVector;
     }
 
     public enum OrientationMethod
@@ -17,8 +35,8 @@ namespace KinematicCharacterController.Examples
         TowardsMovement,
     }
 
-    public struct PlayerCharacterInputs
-    {
+    public struct PlayerCharacterInputs {
+        public Vector2 MoveInput;
         public float MoveAxisForward;
         public float MoveAxisRight;
         public Quaternion CameraRotation;
@@ -41,7 +59,7 @@ namespace KinematicCharacterController.Examples
         TowardsGroundSlopeAndGravity,
     }
 
-    public class ExampleCharacterController : MonoBehaviour, ICharacterController
+    public class KCController : MonoBehaviour, ICharacterController
     {
         public KinematicCharacterMotor Motor;
 
@@ -79,10 +97,10 @@ namespace KinematicCharacterController.Examples
         public float CrouchedCapsuleHeight = 1f;
 
         public CharacterState CurrentCharacterState { get; private set; }
+        public Vector3 MoveInputVector { get; private set; }
 
         private Collider[] _probedColliders = new Collider[8];
         private RaycastHit[] _probedHits = new RaycastHit[8];
-        private Vector3 _moveInputVector;
         private Vector3 _lookInputVector;
         private bool _jumpRequested = false;
         private bool _jumpConsumed = false;
@@ -154,6 +172,7 @@ namespace KinematicCharacterController.Examples
         /// </summary>
         public void SetInputs(ref PlayerCharacterInputs inputs)
         {
+            
             // Clamp input
             Vector3 moveInputVector = Vector3.ClampMagnitude(new Vector3(inputs.MoveAxisRight, 0f, inputs.MoveAxisForward), 1f);
 
@@ -170,7 +189,7 @@ namespace KinematicCharacterController.Examples
                 case CharacterState.Default:
                     {
                         // Move and look inputs
-                        _moveInputVector = cameraPlanarRotation * moveInputVector;
+                        MoveInputVector = cameraPlanarRotation * moveInputVector;
 
                         switch (OrientationMethod)
                         {
@@ -178,7 +197,7 @@ namespace KinematicCharacterController.Examples
                                 _lookInputVector = cameraPlanarDirection;
                                 break;
                             case OrientationMethod.TowardsMovement:
-                                _lookInputVector = _moveInputVector.normalized;
+                                _lookInputVector = MoveInputVector.normalized;
                                 break;
                         }
 
@@ -226,7 +245,7 @@ namespace KinematicCharacterController.Examples
         /// </summary>
         public void SetInputs(ref AICharacterInputs inputs)
         {
-            _moveInputVector = inputs.MoveVector;
+            MoveInputVector = inputs.MoveVector;
             _lookInputVector = inputs.LookVector;
         }
 
@@ -305,6 +324,7 @@ namespace KinematicCharacterController.Examples
             {
                 case CharacterState.Default:
                     {
+                        // Input based movement when grounded
                         // Ground movement
                         if (Motor.GroundingStatus.IsStableOnGround)
                         {
@@ -322,8 +342,8 @@ namespace KinematicCharacterController.Examples
                             currentVelocity = Motor.GetDirectionTangentToSurface(currentVelocity, effectiveGroundNormal) * currentVelocityMagnitude;
 
                             // Calculate target velocity
-                            Vector3 inputRight = Vector3.Cross(_moveInputVector, Motor.CharacterUp);
-                            Vector3 reorientedInput = Vector3.Cross(effectiveGroundNormal, inputRight).normalized * _moveInputVector.magnitude;
+                            Vector3 inputRight = Vector3.Cross(MoveInputVector, Motor.CharacterUp);
+                            Vector3 reorientedInput = Vector3.Cross(effectiveGroundNormal, inputRight).normalized * MoveInputVector.magnitude;
                             Vector3 targetMovementVelocity = reorientedInput * MaxStableMoveSpeed;
 
                             // Smooth movement Velocity
@@ -333,9 +353,9 @@ namespace KinematicCharacterController.Examples
                         else
                         {
                             // Add move input
-                            if (_moveInputVector.sqrMagnitude > 0f)
+                            if (MoveInputVector.sqrMagnitude > 0f)
                             {
-                                Vector3 addedVelocity = _moveInputVector * AirAccelerationSpeed * deltaTime;
+                                Vector3 addedVelocity = MoveInputVector * AirAccelerationSpeed * deltaTime;
 
                                 Vector3 currentVelocityOnInputsPlane = Vector3.ProjectOnPlane(currentVelocity, Motor.CharacterUp);
 
@@ -397,7 +417,7 @@ namespace KinematicCharacterController.Examples
 
                                 // Add to the return velocity and reset jump state
                                 currentVelocity += (jumpDirection * JumpUpSpeed) - Vector3.Project(currentVelocity, Motor.CharacterUp);
-                                currentVelocity += (_moveInputVector * JumpScalableForwardSpeed);
+                                currentVelocity += (MoveInputVector * JumpScalableForwardSpeed);
                                 _jumpRequested = false;
                                 _jumpConsumed = true;
                                 _jumpedThisFrame = true;
