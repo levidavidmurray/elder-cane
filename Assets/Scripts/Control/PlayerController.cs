@@ -2,26 +2,34 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using EC.Core;
+using UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UIElements;
+using Cursor = UnityEngine.Cursor;
+using PlayerInput = EC.Core.PlayerInput;
 
 namespace EC.Control {
     public class PlayerController : MonoBehaviour {
         
         public KCController Character;
         public KCCamera CharacterCamera;
-
-        private Vector2 m_playerMoveInput;
-        private Vector2 m_playerLookInput;
-        private bool m_jumpDown;
-        private bool m_rollDown;
+        public DebugUI debugUI;
+        
+        private PlayerInputHandler playerInput;
 
         private void Start() {
             Cursor.lockState = CursorLockMode.Locked;
+
+            playerInput = GetComponent<PlayerInputHandler>();
+
+            Character.InputHandler = playerInput;
             
             // Tell camera to follow transform
             CharacterCamera.SetFollowTransform(Character.CameraFollowPoint);
-            
+
+            Character.StateMachine.OnStateChange += OnPlayerStateChange;
+
             // Ignore character colliders for camera obstruction checks
             CharacterCamera.IgnoredColliders.Clear();
             CharacterCamera.IgnoredColliders.AddRange(Character.GetComponentsInChildren<Collider>());
@@ -35,39 +43,8 @@ namespace EC.Control {
             HandleCameraInput();
         }
 
-        public void OnMove(InputAction.CallbackContext context) {
-            m_playerMoveInput = context.ReadValue<Vector2>();
-        }
-
-        public void OnLook(InputAction.CallbackContext context) {
-            m_playerLookInput = context.ReadValue<Vector2>();
-            print($"Look Input: {m_playerLookInput}");
-        }
-
-        public void OnJump(InputAction.CallbackContext context) {
-            if (context.canceled) {
-                m_jumpDown = false;
-                return;
-            }
-            
-            if (context.started) m_jumpDown = true;
-        }
-
-        public void OnRoll(InputAction.CallbackContext context) {
-            if (context.canceled) {
-                m_rollDown = false;
-                return;
-            }
-            
-            if (context.started) m_rollDown = true;
-        }
-
-        public void OnFire(InputAction.CallbackContext context) {
-            
-        }
-
         private void HandleCameraInput() {
-            Vector3 lookInputVector = m_playerLookInput;
+            Vector3 lookInputVector = playerInput.LookInput;
 
             if (Cursor.lockState != CursorLockMode.Locked) {
                 lookInputVector = Vector3.zero;
@@ -77,15 +54,22 @@ namespace EC.Control {
         }
 
         private void HandleCharacterInput() {
-            PlayerCharacterInputs inputs = new PlayerCharacterInputs();
-            inputs.MoveInput = m_playerMoveInput;
-            inputs.MoveAxisForward = m_playerMoveInput.y;
-            inputs.MoveAxisRight = m_playerMoveInput.x;
+            PlayerInput inputs = new PlayerInput();
+            inputs.MoveInput = playerInput.MoveInput;
             inputs.CameraRotation = CharacterCamera.Transform.rotation;
-            inputs.JumpDown = m_jumpDown;
-            inputs.RollDown = m_rollDown;
+            inputs.JumpDown = playerInput.JumpInput;
+            inputs.RollDown = playerInput.RollInput;
             
             Character.SetInputs(ref inputs);
+
+            debugUI.MoveInputVector.text = Character.MoveInputVector.ToString();
+        }
+
+        private void OnPlayerStateChange(PlayerState oldState, PlayerState newState) {
+            string oldName = oldState?.GetType()?.Name;
+            string newName = newState.GetType().Name;
+            print($"[State Change]: Old({oldName}) New({newName})");
+            debugUI.CurrentState.text = newState.GetType().Name;
         }
         
         

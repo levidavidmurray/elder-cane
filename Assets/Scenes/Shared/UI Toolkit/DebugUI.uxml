@@ -1,0 +1,10 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:VisualElement style="flex-direction: row;">
+        <ui:Label text="State:" display-tooltip-when-elided="true" name="CurrentState" style="font-size: 16px; color: rgba(255, 255, 255, 255); -unity-text-outline-width: 0;" />
+        <ui:Label text="None" display-tooltip-when-elided="true" name="CurrentStateValue" style="font-size: 16px; -unity-text-outline-color: rgba(0, 0, 0, 255); color: rgba(0, 0, 0, 255);" />
+    </ui:VisualElement>
+    <ui:VisualElement style="flex-direction: row;">
+        <ui:Label text="MoveInputVector:" display-tooltip-when-elided="true" name="MoveInputVector" style="font-size: 16px; color: rgba(255, 255, 255, 255); -unity-text-outline-width: 0;" />
+        <ui:Label text="(0,0,0)" display-tooltip-when-elided="true" name="MoveInputVectorValue" style="font-size: 16px; -unity-text-outline-color: rgba(0, 0, 0, 255); color: rgba(0, 0, 0, 255);" />
+    </ui:VisualElement>
+</ui:UXML>
