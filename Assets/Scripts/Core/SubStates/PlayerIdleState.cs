@@ -22,7 +22,10 @@ namespace EC.Core.SubStates {
 
             if (MoveInput.magnitude != 0f) {
                 stateMachine.ChangeState(Controller.MoveState);
+                return;
             }
+            
+            Controller.Anim.SetFloat(AnimProp_SpeedPercent, 0f);
         }
 
         public override void UpdateVelocity(ref Vector3 currentVelocity, float deltaTime) {

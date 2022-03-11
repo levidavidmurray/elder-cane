@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace EC.Core.SubStates {
     public class PlayerMoveState : PlayerGroundedState {
-        
+
         public PlayerMoveState(KCController Controller, PlayerStateMachine stateMachine, KCControllerData controllerData) : base(Controller, stateMachine, controllerData) {
         }
 
@@ -24,7 +24,12 @@ namespace EC.Core.SubStates {
 
             if (MoveInput.magnitude == 0) {
                 stateMachine.ChangeState(Controller.IdleState);
+                return;
             }
+
+            Vector3 curVel = Controller.Velocity;
+            float speedPercent = curVel.magnitude / controllerData.MaxStableMoveSpeed;
+            Controller.Anim.SetFloat(AnimProp_SpeedPercent, speedPercent);
         }
 
         public override void UpdateVelocity(ref Vector3 currentVelocity, float deltaTime) {
@@ -39,11 +44,12 @@ namespace EC.Core.SubStates {
             currentVelocity = Controller.Motor.GetDirectionTangentToSurface(currentVelocity, effectiveGroundNormal) *
                               currentVelocityMagnitude;
 
+            float speedMultiplier = controllerData.VelocityMagnitudeSpeedCurve.Evaluate(MoveInput.magnitude);
             // Calculate target velocity
             Vector3 inputRight = Vector3.Cross(MoveInputVector, Controller.Motor.CharacterUp);
             Vector3 reorientedInput = Vector3.Cross(effectiveGroundNormal, inputRight).normalized *
                                       MoveInputVector.magnitude;
-            Vector3 targetMovementVelocity = reorientedInput * controllerData.MaxStableMoveSpeed;
+            Vector3 targetMovementVelocity = reorientedInput * (controllerData.MaxStableMoveSpeed * speedMultiplier);
 
             // Smooth movement Velocity
             currentVelocity = Vector3.Lerp(currentVelocity, targetMovementVelocity,

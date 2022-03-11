@@ -1,10 +1,22 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/Scenes/Shared/UI%20Toolkit/DebugUI.uss?fileID=7433441132597879392&amp;guid=da406c6855d32ed469f0b38e63865bc6&amp;type=3#DebugUI" />
     <ui:VisualElement style="flex-direction: row;">
-        <ui:Label text="State:" display-tooltip-when-elided="true" name="CurrentState" style="font-size: 16px; color: rgba(255, 255, 255, 255); -unity-text-outline-width: 0;" />
-        <ui:Label text="None" display-tooltip-when-elided="true" name="CurrentStateValue" style="font-size: 16px; -unity-text-outline-color: rgba(0, 0, 0, 255); color: rgba(0, 0, 0, 255);" />
-    </ui:VisualElement>
-    <ui:VisualElement style="flex-direction: row;">
-        <ui:Label text="MoveInputVector:" display-tooltip-when-elided="true" name="MoveInputVector" style="font-size: 16px; color: rgba(255, 255, 255, 255); -unity-text-outline-width: 0;" />
-        <ui:Label text="(0,0,0)" display-tooltip-when-elided="true" name="MoveInputVectorValue" style="font-size: 16px; -unity-text-outline-color: rgba(0, 0, 0, 255); color: rgba(0, 0, 0, 255);" />
+        <ui:VisualElement name="VisualElement" class="debug-panel" style="width: auto; align-items: stretch; flex-basis: auto; flex-grow: 0; flex-direction: row;">
+            <ui:VisualElement class="debug-header" style="position: absolute;" />
+            <ui:VisualElement name="Container" class="debug-content" style="flex-direction: column; align-items: stretch;">
+                <ui:VisualElement class="flex-row fps-row">
+                    <ui:Label text="FPS" display-tooltip-when-elided="true" name="FpsCounterLabel" style="margin-right: 3px; color: white;" />
+                    <ui:Label text="0" display-tooltip-when-elided="true" name="FpsCounter" />
+                </ui:VisualElement>
+                <ui:VisualElement class="debug-row" style="flex-direction: row;">
+                    <ui:Label text="State:" display-tooltip-when-elided="true" name="CurrentState" class="debug-row-label" />
+                    <ui:Label text="None" display-tooltip-when-elided="true" name="CurrentStateValue" class="debug-row-value" />
+                </ui:VisualElement>
+                <ui:VisualElement class="debug-row" style="flex-direction: row;">
+                    <ui:Label text="Velocity:" display-tooltip-when-elided="true" name="Velocity" class="debug-row-label" />
+                    <ui:Label text="(0.0,0.0,0.0)" display-tooltip-when-elided="true" name="VelocityValue" class="debug-row-value" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

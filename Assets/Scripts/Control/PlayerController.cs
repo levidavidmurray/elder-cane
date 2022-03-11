@@ -62,7 +62,7 @@ namespace EC.Control {
             
             Character.SetInputs(ref inputs);
 
-            debugUI.MoveInputVector.text = Character.MoveInputVector.ToString();
+            debugUI.Velocity.text = Character.Velocity.ToString();
         }
 
         private void OnPlayerStateChange(PlayerState oldState, PlayerState newState) {

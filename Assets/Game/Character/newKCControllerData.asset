@@ -12,16 +12,40 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 273a3ea7339243f4aabd0bcd085bcc4f, type: 3}
   m_Name: newKCControllerData
   m_EditorClassIdentifier: 
-  MaxStableMoveSpeed: 10
-  StableMovementSharpness: 15
+  MaxStableMoveSpeed: 6.45
+  StableMovementSharpness: 10
   OrientationSharpness: 10
   OrientationMethod: 1
-  MaxAirMoveSpeed: 10
-  AirAccelerationSpeed: 10
+  VelocityMagnitudeSpeedCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0.039215088
+      value: 0.013580322
+      inSlope: -0.000043582746
+      outSlope: -0.000043582746
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.13520461
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 3.3076923
+      outSlope: 3.3076923
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.06122445
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  MaxAirMoveSpeed: 8
+  AirAccelerationSpeed: 7
   Drag: 0.3
   jumpCount: 1
   AllowJumpingWhenSliding: 0
-  JumpUpSpeed: 10
+  JumpUpSpeed: 8
   JumpScalableForwardSpeed: 0
   JumpPreGroundingGraceTime: 0
   JumpPostGroundingGraceTime: 0

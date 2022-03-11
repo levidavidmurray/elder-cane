@@ -8,6 +8,7 @@ namespace EC.Core {
         public float StableMovementSharpness = 15f;
         public float OrientationSharpness = 10f;
         public OrientationMethod OrientationMethod = OrientationMethod.TowardsCamera;
+        public AnimationCurve VelocityMagnitudeSpeedCurve;
 
         [Header("Air Movement")]
         public float MaxAirMoveSpeed = 15f;
@@ -21,6 +22,8 @@ namespace EC.Core {
         public float JumpScalableForwardSpeed = 10f;
         public float JumpPreGroundingGraceTime = 0f;
         public float JumpPostGroundingGraceTime = 0f;
+
+        public float GroundLandOffset = 1f;
 
         [Header("Rolling")] 
         public AnimationCurve RollSpeedCurve;

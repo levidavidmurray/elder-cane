@@ -1121,6 +1121,7 @@ GameObject:
   - component: {fileID: 1244221804}
   - component: {fileID: 1244221803}
   - component: {fileID: 1244221802}
+  - component: {fileID: 1244221805}
   m_Layer: 5
   m_Name: DebugUI
   m_TagString: Untagged
@@ -1172,6 +1173,25 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1244221805
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1244221801}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5b89c4a40424cc887dada548f3a37fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Samples: 100
+--- !u!95 &1461837117 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 0bb2c7b8579d22743881828d44fc541e,
+    type: 3}
+  m_PrefabInstance: {fileID: 186244629}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1744416439
 GameObject:
   m_ObjectHideFlags: 0
@@ -1209,7 +1229,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh81022
+  m_Name: pb_Mesh27904
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -1747,4 +1767,6 @@ MonoBehaviour:
   IgnoredColliders: []
   MeshRoot: {fileID: 4036233065961758}
   CameraFollowPoint: {fileID: 4718917187043914}
+  InputHandler: {fileID: 0}
+  Anim: {fileID: 1461837117}
   controllerData: {fileID: 11400000, guid: b80310ac554f3704cb3297c645d52b75, type: 2}

@@ -4,6 +4,8 @@ namespace EC.Core.SuperStates {
     public class PlayerGroundedState : PlayerState {
 
         protected Vector2 MoveInput;
+        
+        protected static readonly int AnimProp_SpeedPercent = Animator.StringToHash("SpeedPercent");
 
         private bool JumpInput;
         private bool RollInput;
@@ -22,6 +24,7 @@ namespace EC.Core.SuperStates {
         public override void Enter() {
             base.Enter();
             
+            Controller.Anim.SetBool(Controller.AnimProp_IsGrounded, true);
             Controller.JumpState.ResetJumps();
         }
 

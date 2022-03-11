@@ -33,6 +33,13 @@ namespace EC.Core {
     }
 
     public class KCController : MonoBehaviour, ICharacterController {
+        
+        # region Anim Properties
+        
+        public readonly int AnimProp_IsGrounded = Animator.StringToHash("IsGrounded");
+        
+        #endregion
+        
         public KinematicCharacterMotor Motor;
 
         public List<Collider> IgnoredColliders = new List<Collider>();
@@ -41,7 +48,8 @@ namespace EC.Core {
         public Vector3 MoveInputVector { get; private set; }
 
         public PlayerInputHandler InputHandler;
-        public Animator Anim { get; private set; }
+        public Animator Anim;
+        
 
         #region States
 
@@ -230,81 +238,6 @@ namespace EC.Core {
         
         }
         
-        // public void UpdateVelocity(ref Vector3 currentVelocity, float deltaTime)
-        // {
-        //     // Ground movement
-        //     if (Motor.GroundingStatus.IsStableOnGround)
-        //     {
-        //         float currentVelocityMagnitude = currentVelocity.magnitude;
-        //
-        //         Vector3 effectiveGroundNormal = Motor.GroundingStatus.GroundNormal;
-        //
-        //         // Reorient velocity on slope
-        //         currentVelocity = Motor.GetDirectionTangentToSurface(currentVelocity, effectiveGroundNormal) * currentVelocityMagnitude;
-        //
-        //         // Calculate target velocity
-        //         Vector3 inputRight = Vector3.Cross(MoveInputVector, Motor.CharacterUp);
-        //         Vector3 reorientedInput = Vector3.Cross(effectiveGroundNormal, inputRight).normalized * MoveInputVector.magnitude;
-        //         Vector3 targetMovementVelocity = reorientedInput * controllerData.MaxStableMoveSpeed;
-        //
-        //         // Smooth movement Velocity
-        //         currentVelocity = Vector3.Lerp(currentVelocity, targetMovementVelocity, 1f - Mathf.Exp(-controllerData.StableMovementSharpness * deltaTime));
-        //     }
-        //     // Air movement
-        //     else
-        //     {
-        //         // Add move input
-        //         if (MoveInputVector.sqrMagnitude > 0f)
-        //         {
-        //             Vector3 addedVelocity = MoveInputVector * controllerData.AirAccelerationSpeed * deltaTime;
-        //
-        //             Vector3 currentVelocityOnInputsPlane = Vector3.ProjectOnPlane(currentVelocity, Motor.CharacterUp);
-        //
-        //             // Limit air velocity from inputs
-        //             if (currentVelocityOnInputsPlane.magnitude < controllerData.MaxAirMoveSpeed)
-        //             {
-        //                 // clamp addedVel to make total vel not exceed max vel on inputs plane
-        //                 Vector3 newTotal = Vector3.ClampMagnitude(currentVelocityOnInputsPlane + addedVelocity, controllerData.MaxAirMoveSpeed);
-        //                 addedVelocity = newTotal - currentVelocityOnInputsPlane;
-        //             }
-        //             else
-        //             {
-        //                 // Make sure added vel doesn't go in the direction of the already-exceeding velocity
-        //                 if (Vector3.Dot(currentVelocityOnInputsPlane, addedVelocity) > 0f)
-        //                 {
-        //                     addedVelocity = Vector3.ProjectOnPlane(addedVelocity, currentVelocityOnInputsPlane.normalized);
-        //                 }
-        //             }
-        //
-        //             // Prevent air-climbing sloped walls
-        //             if (Motor.GroundingStatus.FoundAnyGround)
-        //             {
-        //                 if (Vector3.Dot(currentVelocity + addedVelocity, addedVelocity) > 0f)
-        //                 {
-        //                     Vector3 perpenticularObstructionNormal = Vector3.Cross(Vector3.Cross(Motor.CharacterUp, Motor.GroundingStatus.GroundNormal), Motor.CharacterUp).normalized;
-        //                     addedVelocity = Vector3.ProjectOnPlane(addedVelocity, perpenticularObstructionNormal);
-        //                 }
-        //             }
-        //
-        //             // Apply added velocity
-        //             currentVelocity += addedVelocity;
-        //         }
-        //
-        //         // Gravity
-        //         currentVelocity += controllerData.Gravity * deltaTime;
-        //
-        //         // Drag
-        //         currentVelocity *= (1f / (1f + (controllerDataDrag * deltaTime)));
-        //     }
-        //
-        //     // Take into account additive velocity
-        //     if (_internalVelocityAdd.sqrMagnitude > 0f)
-        //     {
-        //         currentVelocity += _internalVelocityAdd;
-        //         _internalVelocityAdd = Vector3.zero;
-        //     }
-        // }
-
         /// <summary>
         /// (Called by KinematicCharacterMotor during its update cycle)
         /// This is called after the character has finished its movement update
@@ -347,6 +280,12 @@ namespace EC.Core {
 
         public bool CheckIfGrounded() {
             return Motor.GroundingStatus.IsStableOnGround;
+        }
+
+        public void CheckIfGroundOffset() {
+            RaycastHit rayHit;
+
+            var didHit = Physics.Raycast(transform.position, Vector3.down, out rayHit, controllerData.GroundLandOffset);
         }
 
         public bool IsColliderValidForCollisions(Collider coll) {

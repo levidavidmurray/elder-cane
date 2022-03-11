@@ -4,10 +4,12 @@ using UnityEngine;
 namespace EC.Core.SubStates {
     public class PlayerInAirState : PlayerState {
 
+        private static readonly int AnimProp_YVelocity = Animator.StringToHash("yVelocity");
+        
         private bool isGrounded;
 
         private KinematicCharacterMotor Motor;
-        
+
         public PlayerInAirState(KCController Controller, PlayerStateMachine stateMachine, KCControllerData controllerData) : base(Controller, stateMachine, controllerData) {
             Motor = Controller.Motor;
         }
@@ -18,6 +20,12 @@ namespace EC.Core.SubStates {
             isGrounded = Controller.CheckIfGrounded();
         }
 
+        public override void Enter() {
+            base.Enter();
+            
+            Controller.Anim.SetBool(Controller.AnimProp_IsGrounded, false);
+        }
+
         public override void LogicUpdate() {
             base.LogicUpdate();
 
@@ -25,6 +33,7 @@ namespace EC.Core.SubStates {
                 stateMachine.ChangeState(Controller.LandState);
             }
             
+            Controller.Anim.SetFloat(AnimProp_YVelocity, Controller.Velocity.y);
         }
 
         public override void UpdateVelocity(ref Vector3 currentVelocity, float deltaTime) {
