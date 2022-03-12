@@ -22,13 +22,15 @@ namespace EC.Core {
         public float JumpScalableForwardSpeed = 10f;
         public float JumpPreGroundingGraceTime = 0f;
         public float JumpPostGroundingGraceTime = 0f;
-
-        public float GroundLandOffset = 1f;
+        public float JumpCooldown = 0.2f;
 
         [Header("Rolling")] 
         public AnimationCurve RollSpeedCurve;
+        public AnimationCurve RollAnimSpeedCurve;
         public float RollDuration = 0.3f;
-        public float RollSpeedPeak = 10f;
+        public float RollAnimSpeed = 1f;
+        public float MaxRollSpeed = 10f;
+        public float RollCooldown = 0.2f;
 
         [Header("Misc")]
         public BonusOrientationMethod BonusOrientationMethod = BonusOrientationMethod.None;

@@ -1,24 +1,34 @@
 ﻿using UnityEngine;
 
 namespace EC.Core.SuperStates {
-    public class PlayerAbilityState : PlayerState {
+    public abstract class PlayerAbilityState : PlayerState {
         
         protected bool isAbilityDone;
+        
+        private float lastFinishTime;
         private bool isGrounded;
 
         public PlayerAbilityState(KCController Controller, PlayerStateMachine stateMachine, KCControllerData controllerData) : base(Controller, stateMachine, controllerData) {
         }
+        
+        public abstract float GetAbilityCooldown();
+        
+        public bool AbilityIsAvailable() => Time.time - lastFinishTime >= GetAbilityCooldown();
 
         public override void DoChecks() {
             base.DoChecks();
-
             isGrounded = Controller.CheckIfGrounded();
         }
 
         public override void Enter() {
             base.Enter();
 
-            isAbilityDone = false;
+            isAbilityDone = !AbilityIsAvailable();
+        }
+
+        public override void Exit() {
+            base.Exit();
+            lastFinishTime = Time.time;
         }
 
         public override void LogicUpdate() {
@@ -33,5 +43,6 @@ namespace EC.Core.SuperStates {
                 stateMachine.ChangeState(Controller.InAirState);
             }
         }
+        
     }
 }

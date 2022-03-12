@@ -5,6 +5,12 @@ using UnityEngine.InputSystem;
 namespace EC.Control {
     public class PlayerInputHandler : MonoBehaviour {
         
+        #region Custom Callbacks
+
+        public Action<InputAction.CallbackContext> OnResetCb;
+        
+        #endregion
+        
         public Vector2 MoveInput { get; private set; }
         public Vector2 LookInput { get; private set; }
         public bool JumpInput { get; private set; }
@@ -52,6 +58,10 @@ namespace EC.Control {
             if (context.canceled) {
                 RollInputStop = true;
             }
+        }
+
+        public void OnReset(InputAction.CallbackContext context) {
+            OnResetCb?.Invoke(context);
         }
 
         public void UseJumpInput() => JumpInput = false;

@@ -30,6 +30,14 @@ namespace EC.Control {
 
             Character.StateMachine.OnStateChange += OnPlayerStateChange;
 
+            Vector3 charStartPos = Character.transform.position;
+            playerInput.OnResetCb += context => {
+                if (context.performed) {
+                    Character.Motor.SetPosition(charStartPos);
+                    Character.ResetVelocity();
+                }
+            };
+
             // Ignore character colliders for camera obstruction checks
             CharacterCamera.IgnoredColliders.Clear();
             CharacterCamera.IgnoredColliders.AddRange(Character.GetComponentsInChildren<Collider>());
@@ -41,6 +49,8 @@ namespace EC.Control {
 
         private void LateUpdate() {
             HandleCameraInput();
+
+            debugUI.VelocityMagnitude.text = Character.Velocity.magnitude.ToString();
         }
 
         private void HandleCameraInput() {
@@ -63,6 +73,10 @@ namespace EC.Control {
             Character.SetInputs(ref inputs);
 
             debugUI.Velocity.text = Character.Velocity.ToString();
+        }
+
+        private void ResetPlayer() {
+            
         }
 
         private void OnPlayerStateChange(PlayerState oldState, PlayerState newState) {

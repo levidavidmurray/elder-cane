@@ -20,22 +20,22 @@ MonoBehaviour:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: 0.039215088
-      value: 0.013580322
-      inSlope: -0.000043582746
-      outSlope: -0.000043582746
+      time: 0
+      value: 0.1
+      inSlope: 0.01603614
+      outSlope: 0.01603614
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
-      outWeight: 0.13520461
+      outWeight: 0.11692561
     - serializedVersion: 3
       time: 1
       value: 1
-      inSlope: 3.3076923
-      outSlope: 3.3076923
+      inSlope: 2.8813398
+      outSlope: 2.8813398
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.06122445
+      inWeight: 0.06358141
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
@@ -49,14 +49,59 @@ MonoBehaviour:
   JumpScalableForwardSpeed: 0
   JumpPreGroundingGraceTime: 0
   JumpPostGroundingGraceTime: 0
+  JumpCooldown: 0.2
   RollSpeedCurve:
     serializedVersion: 2
-    m_Curve: []
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: -0.011538352
+      outSlope: -0.011538352
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.13861386
+    - serializedVersion: 3
+      time: 1
+      value: 0.25
+      inSlope: -0.35550663
+      outSlope: -0.35550663
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.13398576
+      outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  RollDuration: 0.3
-  RollSpeedPeak: 10
+  RollAnimSpeedCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 2
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 2
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  RollDuration: 0.6
+  RollAnimSpeed: 2
+  MaxRollSpeed: 15
+  RollCooldown: 0.2
   BonusOrientationMethod: 0
   BonusOrientationSharpness: 10
   Gravity: {x: 0, y: -30, z: 0}

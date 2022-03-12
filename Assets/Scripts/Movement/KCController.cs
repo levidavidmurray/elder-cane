@@ -36,19 +36,28 @@ namespace EC.Core {
         
         # region Anim Properties
         
+        public readonly int AnimProp_YVelocity = Animator.StringToHash("yVelocity");
         public readonly int AnimProp_IsGrounded = Animator.StringToHash("IsGrounded");
+        public readonly int AnimProp_Roll = Animator.StringToHash("Roll");
+        public readonly int AnimProp_Land = Animator.StringToHash("Land");
         
         #endregion
         
         public KinematicCharacterMotor Motor;
 
         public List<Collider> IgnoredColliders = new List<Collider>();
+        public PlayerInputHandler InputHandler;
+        public Animator Anim;
+        
         public Transform MeshRoot;
         public Transform CameraFollowPoint;
         public Vector3 MoveInputVector { get; private set; }
-
-        public PlayerInputHandler InputHandler;
-        public Animator Anim;
+        
+        #region Computed Properties
+        
+        public Vector3 Velocity => Motor.Velocity;
+        
+        #endregion
         
 
         #region States
@@ -60,9 +69,12 @@ namespace EC.Core {
         public PlayerJumpState JumpState { get; private set; }
         public PlayerInAirState InAirState { get; private set; }
         public PlayerLandState LandState { get; private set; }
+        public PlayerRollState RollState { get; private set; }
 
         [SerializeField] private KCControllerData controllerData;
         #endregion
+
+        private bool _shouldResetVelocity = false;
 
         private Collider[] _probedColliders = new Collider[8];
         private Vector3 _lookInputVector;
@@ -70,7 +82,9 @@ namespace EC.Core {
         private bool _isCrouching;
         private bool _isRolling;
         private Vector3 _internalVelocityAdd = Vector3.zero;
+        
 
+        #region Unity Callbacks
         private void Awake() {
             // Assign the characterController to the motor
             Motor.CharacterController = this;
@@ -83,6 +97,7 @@ namespace EC.Core {
             JumpState = new PlayerJumpState(this, StateMachine, controllerData);
             LandState = new PlayerLandState(this, StateMachine, controllerData);
             InAirState = new PlayerInAirState(this, StateMachine, controllerData);
+            RollState = new PlayerRollState(this, StateMachine, controllerData);
         }
 
         private void Start() {
@@ -96,8 +111,12 @@ namespace EC.Core {
         private void FixedUpdate() {
             StateMachine.CurrentState.PhysicsUpdate();
         }
+        
+        #endregion
 
-        public Vector3 Velocity => Motor.Velocity;
+        public void ResetVelocity() {
+            _shouldResetVelocity = true;
+        }
 
         /// <summary>
         /// This is called every frame by ExamplePlayer in order to tell the character what its inputs are
@@ -235,7 +254,18 @@ namespace EC.Core {
                 currentVelocity += _internalVelocityAdd;
                 _internalVelocityAdd = Vector3.zero;
             }
+
+            if (_shouldResetVelocity) {
+                currentVelocity = Vector3.zero;
+                _shouldResetVelocity = false;
+            }
         
+        }
+
+        public Vector3 ReorientedInput() {
+            Vector3 effectiveGroundNormal = Motor.GroundingStatus.GroundNormal;
+            Vector3 inputRight = Vector3.Cross(MoveInputVector, Motor.CharacterUp);
+            return Vector3.Cross(effectiveGroundNormal, inputRight).normalized * MoveInputVector.magnitude;
         }
         
         /// <summary>
@@ -243,7 +273,7 @@ namespace EC.Core {
         /// This is called after the character has finished its movement update
         /// </summary>
         public void AfterCharacterUpdate(float deltaTime) {
-
+            
             bool shouldUncrounch = _isCrouching && !_shouldBeCrouching;
 
             // Handle uncrouching
@@ -280,12 +310,6 @@ namespace EC.Core {
 
         public bool CheckIfGrounded() {
             return Motor.GroundingStatus.IsStableOnGround;
-        }
-
-        public void CheckIfGroundOffset() {
-            RaycastHit rayHit;
-
-            var didHit = Physics.Raycast(transform.position, Vector3.down, out rayHit, controllerData.GroundLandOffset);
         }
 
         public bool IsColliderValidForCollisions(Collider coll) {

@@ -23,6 +23,9 @@ namespace EC.Core.SubStates {
 
         public override void LogicUpdate() {
             base.LogicUpdate();
+
+            if (isAbilityDone) return;
+            
             isAbilityDone = velocityDidUpdate;
         }
 
@@ -51,7 +54,9 @@ namespace EC.Core.SubStates {
             velocityDidUpdate = true;
         }
 
-        public bool CanJump() => jumpsRemaining > 0;
+        public override float GetAbilityCooldown() => controllerData.JumpCooldown;
+
+        public bool CanJump() => jumpsRemaining > 0 && AbilityIsAvailable();
 
         public void ResetJumps() => jumpsRemaining = controllerData.jumpCount;
 

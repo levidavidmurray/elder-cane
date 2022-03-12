@@ -41,6 +41,12 @@ namespace EC.Core.SuperStates {
 
             if (JumpInput && Controller.JumpState.CanJump()) {
                 stateMachine.ChangeState(Controller.JumpState);
+                return;
+            }
+
+            if (RollInput && Controller.RollState.CanRoll()) {
+                stateMachine.ChangeState(Controller.RollState);
+                return;
             }
         }
 

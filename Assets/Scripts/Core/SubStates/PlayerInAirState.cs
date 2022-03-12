@@ -4,7 +4,6 @@ using UnityEngine;
 namespace EC.Core.SubStates {
     public class PlayerInAirState : PlayerState {
 
-        private static readonly int AnimProp_YVelocity = Animator.StringToHash("yVelocity");
         
         private bool isGrounded;
 
@@ -24,6 +23,7 @@ namespace EC.Core.SubStates {
             base.Enter();
             
             Controller.Anim.SetBool(Controller.AnimProp_IsGrounded, false);
+            Controller.Anim.ResetTrigger(Controller.AnimProp_Land);
         }
 
         public override void LogicUpdate() {
@@ -33,7 +33,7 @@ namespace EC.Core.SubStates {
                 stateMachine.ChangeState(Controller.LandState);
             }
             
-            Controller.Anim.SetFloat(AnimProp_YVelocity, Controller.Velocity.y);
+            Controller.Anim.SetFloat(Controller.AnimProp_YVelocity, Controller.Velocity.y);
         }
 
         public override void UpdateVelocity(ref Vector3 currentVelocity, float deltaTime) {

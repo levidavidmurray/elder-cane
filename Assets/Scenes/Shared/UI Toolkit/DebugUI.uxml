@@ -16,6 +16,10 @@
                     <ui:Label text="Velocity:" display-tooltip-when-elided="true" name="Velocity" class="debug-row-label" />
                     <ui:Label text="(0.0,0.0,0.0)" display-tooltip-when-elided="true" name="VelocityValue" class="debug-row-value" />
                 </ui:VisualElement>
+                <ui:VisualElement class="debug-row" style="flex-direction: row;">
+                    <ui:Label text="Magnitude:" display-tooltip-when-elided="true" name="VelocityMagnitude" class="debug-row-label" />
+                    <ui:Label text="0" display-tooltip-when-elided="true" name="VelocityMagnitudeValue" class="debug-row-value" />
+                </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>

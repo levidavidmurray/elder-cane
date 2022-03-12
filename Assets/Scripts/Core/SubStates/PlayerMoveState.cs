@@ -38,7 +38,6 @@ namespace EC.Core.SubStates {
             float currentVelocityMagnitude = currentVelocity.magnitude;
 
             Vector3 effectiveGroundNormal = Controller.Motor.GroundingStatus.GroundNormal;
-            Vector3 MoveInputVector = Controller.MoveInputVector;
 
             // Reorient velocity on slope
             currentVelocity = Controller.Motor.GetDirectionTangentToSurface(currentVelocity, effectiveGroundNormal) *
@@ -46,9 +45,7 @@ namespace EC.Core.SubStates {
 
             float speedMultiplier = controllerData.VelocityMagnitudeSpeedCurve.Evaluate(MoveInput.magnitude);
             // Calculate target velocity
-            Vector3 inputRight = Vector3.Cross(MoveInputVector, Controller.Motor.CharacterUp);
-            Vector3 reorientedInput = Vector3.Cross(effectiveGroundNormal, inputRight).normalized *
-                                      MoveInputVector.magnitude;
+            Vector3 reorientedInput = Controller.ReorientedInput();
             Vector3 targetMovementVelocity = reorientedInput * (controllerData.MaxStableMoveSpeed * speedMultiplier);
 
             // Smooth movement Velocity

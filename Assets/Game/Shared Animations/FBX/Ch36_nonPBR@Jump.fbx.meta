@@ -39,7 +39,7 @@ ModelImporter:
       name: LandToIdle
       takeName: mixamo.com
       internalID: 0
-      firstFrame: 32
+      firstFrame: 40
       lastFrame: 65
       wrapMode: 0
       orientationOffsetY: 0

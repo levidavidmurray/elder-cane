@@ -578,6 +578,22 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 9237d65c-83d6-4103-95ed-f5a23cd9962e
     m_ActionName: Player/Roll[/XInputControllerWindows/buttonEast]
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 411118412}
+        m_TargetAssemblyTypeName: EC.Control.PlayerInputHandler, Assembly-CSharp
+        m_MethodName: OnReset
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: c1828b2e-2398-4491-aa22-f23656184b61
+    m_ActionName: Player/Reset[/XInputControllerWindows/select]
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: Gamepad
   m_DefaultActionMap: Player
@@ -1229,7 +1245,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh27904
+  m_Name: pb_Mesh29378
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -1716,16 +1732,16 @@ MonoBehaviour:
   Camera: {fileID: 20127478112817679}
   FollowPointFraming: {x: 0, y: 0}
   FollowingSharpness: 10000
-  DefaultDistance: 3
+  DefaultDistance: 2
   MinDistance: 0
   MaxDistance: 5
   DistanceMovementSpeed: 5
   DistanceMovementSharpness: 10
   InvertX: 0
   InvertY: 0
-  DefaultVerticalAngle: 20
-  MinVerticalAngle: -90
-  MaxVerticalAngle: 90
+  DefaultVerticalAngle: 7
+  MinVerticalAngle: -50
+  MaxVerticalAngle: 70
   RotationSpeed: 1
   RotationSharpness: 10000
   RotateWithPhysicsMover: 0
@@ -1734,7 +1750,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   ObstructionSharpness: 10000
-  IgnoredColliders: []
+  IgnoredColliders:
+  - {fileID: 136457490997500354}
 --- !u!54 &6177337246039337432
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1765,8 +1782,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Motor: {fileID: 114967587472156438}
   IgnoredColliders: []
-  MeshRoot: {fileID: 4036233065961758}
-  CameraFollowPoint: {fileID: 4718917187043914}
   InputHandler: {fileID: 0}
   Anim: {fileID: 1461837117}
+  MeshRoot: {fileID: 4036233065961758}
+  CameraFollowPoint: {fileID: 4718917187043914}
   controllerData: {fileID: 11400000, guid: b80310ac554f3704cb3297c645d52b75, type: 2}
