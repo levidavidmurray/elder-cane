@@ -19,6 +19,7 @@ namespace EC.Core {
         public bool RollDown;
         public bool CrouchDown;
         public bool CrouchUp;
+        public Transform LockTarget;
     }
 
     public struct AIInput {
@@ -40,6 +41,9 @@ namespace EC.Core {
         public readonly int AnimProp_IsGrounded = Animator.StringToHash("IsGrounded");
         public readonly int AnimProp_Roll = Animator.StringToHash("Roll");
         public readonly int AnimProp_Land = Animator.StringToHash("Land");
+        public readonly int AnimProp_MoveMagnitude = Animator.StringToHash("MoveMagnitude");
+        public readonly int AnimProp_Forward = Animator.StringToHash("Forward");
+        public readonly int AnimProp_Sideways = Animator.StringToHash("Sideways");
         
         #endregion
         
@@ -51,11 +55,17 @@ namespace EC.Core {
         
         public Transform MeshRoot;
         public Transform CameraFollowPoint;
+        public Transform LockedTarget;
+        public AnimationClip RollAnimClip;
+        public AnimationClip BackflipAnimClip;
         public Vector3 MoveInputVector { get; private set; }
+
+        public Action OnRollComplete;
         
         #region Computed Properties
         
         public Vector3 Velocity => Motor.Velocity;
+        public bool IsLockedOn => _lockTarget != null;
         
         #endregion
         
@@ -76,6 +86,7 @@ namespace EC.Core {
 
         private bool _shouldResetVelocity = false;
 
+        private Transform _lockTarget;
         private Collider[] _probedColliders = new Collider[8];
         private Vector3 _lookInputVector;
         private bool _shouldBeCrouching;
@@ -106,6 +117,19 @@ namespace EC.Core {
 
         private void Update() {
             StateMachine.CurrentState.LogicUpdate();
+            
+            Anim.SetFloat(AnimProp_MoveMagnitude, InputHandler.MoveInput.magnitude);
+
+            float moveInputY = InputHandler.MoveInput.y;
+            float moveInputX = InputHandler.MoveInput.x;
+
+            if (!_lockTarget) {
+                moveInputY = Mathf.Abs(moveInputY);
+                moveInputX = Mathf.Abs(moveInputX);
+            }
+            
+            Anim.SetFloat(AnimProp_Forward, moveInputY);
+            Anim.SetFloat(AnimProp_Sideways, moveInputX);
         }
 
         private void FixedUpdate() {
@@ -122,6 +146,16 @@ namespace EC.Core {
         /// This is called every frame by ExamplePlayer in order to tell the character what its inputs are
         /// </summary>
         public void SetInputs(ref PlayerInput inputs) {
+            
+            _lockTarget = inputs.LockTarget;
+
+            // if (_lockTarget) {
+            //     controllerData.OrientationMethod = OrientationMethod.TowardsCamera;
+            // }
+            // else {
+            //     controllerData.OrientationMethod = OrientationMethod.TowardsMovement;
+            // }
+            
             // Clamp input
             Vector3 moveInputVector = Vector3.ClampMagnitude(new Vector3(inputs.MoveInput.x, 0f, inputs.MoveInput.y), 1f);
 
@@ -144,30 +178,6 @@ namespace EC.Core {
                 case OrientationMethod.TowardsMovement:
                     _lookInputVector = MoveInputVector.normalized;
                     break;
-            }
-
-            // Roll input
-            // if (inputs.RollDown) {
-            //     if (!ShouldBeRolling) {
-            //         _isRolling = true;
-            //         _rollStartTime = Time.time;
-            //         Motor.SetCapsuleDimensions(0.5f, CrouchedCapsuleHeight, CrouchedCapsuleHeight * 0.5f);
-            //         MeshRoot.localScale = new Vector3(1f, 0.5f, 1f);
-            //     }
-            // }
-
-            // Crouching input
-            if (inputs.CrouchDown) {
-                _shouldBeCrouching = true;
-
-                if (!_isCrouching) {
-                    _isCrouching = true;
-                    Motor.SetCapsuleDimensions(0.5f, controllerData.CrouchedCapsuleHeight, controllerData.CrouchedCapsuleHeight * 0.5f);
-                    MeshRoot.localScale = new Vector3(1f, 0.5f, 1f);
-                }
-            }
-            else if (inputs.CrouchUp) {
-                _shouldBeCrouching = false;
             }
 
         }
@@ -193,6 +203,29 @@ namespace EC.Core {
         /// This is the ONLY place where you should set the character's rotation
         /// </summary>
         public void UpdateRotation(ref Quaternion currentRotation, float deltaTime) {
+
+            // if (_lockTarget) {
+            //     var targetDir = (_lockTarget.position - transform.position).normalized;
+            //     var lookRotation = Quaternion.LookRotation(targetDir, Motor.CharacterUp);
+            //     var currentEuler = currentRotation.eulerAngles;
+            //     currentEuler.y = lookRotation.eulerAngles.y;
+            //     currentRotation = Quaternion.Euler(currentEuler);
+            //     return;
+            // }
+
+            if (_lockTarget) {
+                Vector3 dir = _lockTarget.position - transform.position;
+                dir.Normalize();
+                dir.y = 0;
+                //
+                // Vector3 smoothedLookInputDirection = Vector3.Slerp(Motor.CharacterForward, dir,
+                //     1 - Mathf.Exp(-controllerData.OrientationSharpness * deltaTime)).normalized;
+                //
+                // currentRotation = Quaternion.LookRotation(dir);
+                // return;
+                _lookInputVector = dir;
+            }
+            
             if (_lookInputVector.sqrMagnitude > 0f && controllerData.OrientationSharpness > 0f) {
                 // Smoothly interpolate from current to target look direction
                 Vector3 smoothedLookInputDirection = Vector3.Slerp(Motor.CharacterForward, _lookInputVector,
@@ -203,39 +236,9 @@ namespace EC.Core {
             }
 
             Vector3 currentUp = (currentRotation * Vector3.up);
-            if (controllerData.BonusOrientationMethod == BonusOrientationMethod.TowardsGravity) {
-                // Rotate from current up to invert gravity
-                Vector3 smoothedGravityDir = Vector3.Slerp(currentUp, -controllerData.Gravity.normalized,
-                    1 - Mathf.Exp(-controllerData.BonusOrientationSharpness * deltaTime));
-                currentRotation = Quaternion.FromToRotation(currentUp, smoothedGravityDir) * currentRotation;
-            }
-            else if (controllerData.BonusOrientationMethod == BonusOrientationMethod.TowardsGroundSlopeAndGravity) {
-                if (Motor.GroundingStatus.IsStableOnGround) {
-                    Vector3 initialCharacterBottomHemiCenter =
-                        Motor.TransientPosition + (currentUp * Motor.Capsule.radius);
-
-                    Vector3 smoothedGroundNormal = Vector3.Slerp(Motor.CharacterUp,
-                        Motor.GroundingStatus.GroundNormal,
-                        1 - Mathf.Exp(-controllerData.BonusOrientationSharpness * deltaTime));
-                    currentRotation = Quaternion.FromToRotation(currentUp, smoothedGroundNormal) *
-                                      currentRotation;
-
-                    // Move the position to create a rotation around the bottom hemi center instead of around the pivot
-                    Motor.SetTransientPosition(initialCharacterBottomHemiCenter +
-                                               (currentRotation * Vector3.down * Motor.Capsule.radius));
-                }
-                else {
-                    Vector3 smoothedGravityDir = Vector3.Slerp(currentUp, -controllerData.Gravity.normalized,
-                        1 - Mathf.Exp(-controllerData.BonusOrientationSharpness * deltaTime));
-                    currentRotation = Quaternion.FromToRotation(currentUp, smoothedGravityDir) *
-                                      currentRotation;
-                }
-            }
-            else {
-                Vector3 smoothedGravityDir = Vector3.Slerp(currentUp, Vector3.up,
-                    1 - Mathf.Exp(-controllerData.BonusOrientationSharpness * deltaTime));
-                currentRotation = Quaternion.FromToRotation(currentUp, smoothedGravityDir) * currentRotation;
-            }
+            Vector3 smoothedGravityDir = Vector3.Slerp(currentUp, Vector3.up,
+                1 - Mathf.Exp(-controllerData.BonusOrientationSharpness * deltaTime));
+            currentRotation = Quaternion.FromToRotation(currentUp, smoothedGravityDir) * currentRotation;
 
         }
 

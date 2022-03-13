@@ -100,8 +100,10 @@ MonoBehaviour:
     m_RotationOrder: 4
   RollDuration: 0.6
   RollAnimSpeed: 2
-  MaxRollSpeed: 15
+  MaxRollSpeed: 10
   RollCooldown: 0.2
+  MaxFlipSpeed: 10
+  FlipAnimSpeed: 2
   BonusOrientationMethod: 0
   BonusOrientationSharpness: 10
   Gravity: {x: 0, y: -30, z: 0}

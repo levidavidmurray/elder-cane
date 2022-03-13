@@ -8,6 +8,7 @@ namespace EC.Control {
         #region Custom Callbacks
 
         public Action<InputAction.CallbackContext> OnResetCb;
+        public Action<InputAction.CallbackContext> OnLockTargetCb;
         
         #endregion
         
@@ -62,6 +63,10 @@ namespace EC.Control {
 
         public void OnReset(InputAction.CallbackContext context) {
             OnResetCb?.Invoke(context);
+        }
+        
+        public void OnLockTarget(InputAction.CallbackContext context) {
+            OnLockTargetCb?.Invoke(context);
         }
 
         public void UseJumpInput() => JumpInput = false;

@@ -26,6 +26,8 @@ namespace EC.Core.SubStates {
             }
             
             Controller.Anim.SetFloat(AnimProp_SpeedPercent, 0f);
+            Controller.Anim.SetFloat(Controller.AnimProp_Forward, 0f);
+            Controller.Anim.SetFloat(Controller.AnimProp_Sideways, 0f);
         }
 
         public override void UpdateVelocity(ref Vector3 currentVelocity, float deltaTime) {

@@ -4,14 +4,11 @@ using UnityEngine;
 namespace EC.Core.SubStates {
     public class PlayerRollState : PlayerAbilityState {
         
-        private float rollStartTime;
-        private Animator Anim;
-        private AnimationClip RollClip;
         private float defaultClipDuration;
-        private float rollClipDuration;
+        private Vector2 MoveInput;
         
         public PlayerRollState(KCController Controller, PlayerStateMachine stateMachine, KCControllerData controllerData) : base(Controller, stateMachine, controllerData) {
-            Anim = Controller.Anim;
+            Controller.OnRollComplete += () => isAbilityDone = true;
         }
 
         public override float GetAbilityCooldown() => controllerData.RollCooldown;
@@ -19,8 +16,14 @@ namespace EC.Core.SubStates {
         public override void Enter() {
             base.Enter();
 
-            rollStartTime = Time.time;
             Controller.Anim.SetTrigger(Controller.AnimProp_Roll);
+
+            float animSpeed = controllerData.RollAnimSpeed;
+            if (ShouldBackflip) {
+                animSpeed = controllerData.FlipAnimSpeed;
+            }
+
+            Controller.Anim.speed = animSpeed;
         }
 
         public override void Exit() {
@@ -30,25 +33,15 @@ namespace EC.Core.SubStates {
 
         public override void LogicUpdate() {
             base.LogicUpdate();
-
-            // float rollTime = Time.time - rollStartTime;
-            // float speedMultiplier = controllerData.RollSpeedCurve.Evaluate(rollTime / controllerData.RollDuration);
-            // float rollSpeed = speedMultiplier * controllerData.MaxRollSpeed;
-            //
-            // Controller.AddVelocity(Controller.transform.forward * rollSpeed);
-
-            isAbilityDone = RollFinished;
+            MoveInput = Controller.InputHandler.MoveInput;
         }
 
         public override void UpdateVelocity(ref Vector3 currentVelocity, float deltaTime) {
             base.UpdateVelocity(ref currentVelocity, deltaTime);
+            HandleRollVelocity(ref currentVelocity, deltaTime);
+        }
 
-            if (!RollClip) {
-                var animClipInfo = Anim.GetCurrentAnimatorClipInfo(0);
-                RollClip = animClipInfo[0].clip;
-                defaultClipDuration = RollClip.length;
-            }
-            
+        void HandleRollVelocity(ref Vector3 currentVelocity, float deltaTime) {
             float currentVelocityMagnitude = currentVelocity.magnitude;
 
             Vector3 effectiveGroundNormal = Controller.Motor.GroundingStatus.GroundNormal;
@@ -57,24 +50,32 @@ namespace EC.Core.SubStates {
             currentVelocity = Controller.Motor.GetDirectionTangentToSurface(currentVelocity, effectiveGroundNormal) *
                               currentVelocityMagnitude;
 
-            float rollTime = Time.time - rollStartTime;
             // float animSpeed = controllerData.RollAnimSpeedCurve.Evaluate(rollTime / defaultClipDuration);
-            Anim.speed = controllerData.RollAnimSpeed;
-            rollClipDuration = defaultClipDuration * (1 / Anim.speed);
-            float speedMultiplier = controllerData.RollSpeedCurve.Evaluate(rollTime / rollClipDuration);
+            // Anim.speed = controllerData.RollAnimSpeed;
+            // float speedMultiplier = controllerData.RollSpeedCurve.Evaluate(rollTime / rollClipDuration);
+            float speedMultiplier = 1f;
+
+            int dirSign = 1;
+            float rollSpeed = controllerData.MaxRollSpeed;
+
+            if (ShouldBackflip) {
+                dirSign = -1;
+                rollSpeed = controllerData.MaxFlipSpeed;
+            }
             
             // Calculate target velocity
             // Vector3 reorientedInput = Controller.ReorientedInput();
-            Vector3 targetMovementVelocity = Controller.transform.forward * (controllerData.MaxRollSpeed * speedMultiplier);
+            Vector3 targetMovementVelocity = (Controller.transform.forward * dirSign) * (rollSpeed * speedMultiplier);
             
             // Smooth movement Velocity
             currentVelocity = Vector3.Lerp(currentVelocity, targetMovementVelocity,
                 1f - Mathf.Exp(-controllerData.StableMovementSharpness * deltaTime));
+            
         }
 
-        public bool CanRoll() => RollFinished && AbilityIsAvailable();
+        public bool CanRoll() => AbilityIsAvailable();
         
-        private bool RollFinished => Time.time - rollStartTime >= rollClipDuration;
+        private bool ShouldBackflip => Controller.IsLockedOn && MoveInput.y < 0;
         
     }
 }

@@ -26,10 +26,6 @@ namespace EC.Core.SubStates {
                 stateMachine.ChangeState(Controller.IdleState);
                 return;
             }
-
-            Vector3 curVel = Controller.Velocity;
-            float speedPercent = curVel.magnitude / controllerData.MaxStableMoveSpeed;
-            Controller.Anim.SetFloat(AnimProp_SpeedPercent, speedPercent);
         }
 
         public override void UpdateVelocity(ref Vector3 currentVelocity, float deltaTime) {

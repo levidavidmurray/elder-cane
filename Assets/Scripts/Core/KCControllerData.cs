@@ -31,6 +31,10 @@ namespace EC.Core {
         public float RollAnimSpeed = 1f;
         public float MaxRollSpeed = 10f;
         public float RollCooldown = 0.2f;
+        
+        [Header("Backflip")]
+        public float MaxFlipSpeed = 10f;
+        public float FlipAnimSpeed = 2f;
 
         [Header("Misc")]
         public BonusOrientationMethod BonusOrientationMethod = BonusOrientationMethod.None;
