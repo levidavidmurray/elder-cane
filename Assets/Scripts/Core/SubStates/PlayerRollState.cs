@@ -6,6 +6,7 @@ namespace EC.Core.SubStates {
         
         private float defaultClipDuration;
         private Vector2 MoveInput;
+        private bool isBackflip;
         
         public PlayerRollState(KCController Controller, PlayerStateMachine stateMachine, KCControllerData controllerData) : base(Controller, stateMachine, controllerData) {
             Controller.OnRollComplete += () => isAbilityDone = true;
@@ -23,7 +24,9 @@ namespace EC.Core.SubStates {
                 animSpeed = controllerData.FlipAnimSpeed;
             }
 
+            MoveInput = Controller.InputHandler.MoveInput;
             Controller.Anim.speed = animSpeed;
+            isBackflip = ShouldBackflip;
         }
 
         public override void Exit() {
@@ -34,6 +37,12 @@ namespace EC.Core.SubStates {
         public override void LogicUpdate() {
             base.LogicUpdate();
             MoveInput = Controller.InputHandler.MoveInput;
+
+            var jumpInput = Controller.InputHandler.JumpInput;
+
+            if (jumpInput && Controller.JumpState.CanJump()) {
+                stateMachine.ChangeState(Controller.JumpState);
+            }
         }
 
         public override void UpdateVelocity(ref Vector3 currentVelocity, float deltaTime) {
@@ -58,7 +67,7 @@ namespace EC.Core.SubStates {
             int dirSign = 1;
             float rollSpeed = controllerData.MaxRollSpeed;
 
-            if (ShouldBackflip) {
+            if (isBackflip) {
                 dirSign = -1;
                 rollSpeed = controllerData.MaxFlipSpeed;
             }

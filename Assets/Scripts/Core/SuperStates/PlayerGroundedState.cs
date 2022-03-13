@@ -26,6 +26,7 @@ namespace EC.Core.SuperStates {
             
             Controller.Anim.SetBool(Controller.AnimProp_IsGrounded, true);
             Controller.JumpState.ResetJumps();
+            Controller.InputHandler.UseJumpInput();
         }
 
         public override void Exit() {
@@ -38,6 +39,7 @@ namespace EC.Core.SuperStates {
             MoveInput = Controller.InputHandler.MoveInput;
             JumpInput = Controller.InputHandler.JumpInput;
             RollInput = Controller.InputHandler.RollInput;
+            
 
             if (JumpInput && Controller.JumpState.CanJump()) {
                 stateMachine.ChangeState(Controller.JumpState);

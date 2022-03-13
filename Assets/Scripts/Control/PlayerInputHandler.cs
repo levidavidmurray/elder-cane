@@ -27,6 +27,8 @@ namespace EC.Control {
         private void Update() {
             CheckJumpInputHoldTime();
             CheckRollInputHoldTime();
+            
+            Debug.Log($"JumpInput: {JumpInput}");
         }
 
         public void OnMove(InputAction.CallbackContext context) {
@@ -74,9 +76,9 @@ namespace EC.Control {
         public void UseRollInput() => RollInput = false;
 
         private void CheckJumpInputHoldTime() {
-            if (Time.time - jumpInputStartTime >= inputHoldTime) {
-                JumpInput = false;
-            }
+            // if (Time.time - jumpInputStartTime >= inputHoldTime) {
+            //     JumpInput = false;
+            // }
         }
 
         private void CheckRollInputHoldTime() {

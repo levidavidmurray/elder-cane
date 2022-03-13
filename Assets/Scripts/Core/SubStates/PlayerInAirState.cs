@@ -4,9 +4,9 @@ using UnityEngine;
 namespace EC.Core.SubStates {
     public class PlayerInAirState : PlayerState {
 
+        public float Gravity = -9.81f;
         
         private bool isGrounded;
-
         private KinematicCharacterMotor Motor;
 
         public PlayerInAirState(KCController Controller, PlayerStateMachine stateMachine, KCControllerData controllerData) : base(Controller, stateMachine, controllerData) {
@@ -26,6 +26,11 @@ namespace EC.Core.SubStates {
             Controller.Anim.ResetTrigger(Controller.AnimProp_Land);
         }
 
+        public override void Exit() {
+            base.Exit();
+            // Controller.InputHandler.UseJumpInput();
+        }
+
         public override void LogicUpdate() {
             base.LogicUpdate();
 
@@ -39,8 +44,12 @@ namespace EC.Core.SubStates {
         public override void UpdateVelocity(ref Vector3 currentVelocity, float deltaTime) {
             base.UpdateVelocity(ref currentVelocity, deltaTime);
 
+            bool isFalling = currentVelocity.y <= 0f || Controller.InputHandler.JumpInputStop;
+            float fallMultiplier = 2f;
+
+            Vector3 addedVelocity = Vector3.zero;
             if (Controller.MoveInputVector.sqrMagnitude > 0f) {
-                Vector3 addedVelocity = Controller.MoveInputVector * controllerData.AirAccelerationSpeed * deltaTime;
+                addedVelocity = Controller.MoveInputVector * controllerData.AirAccelerationSpeed * deltaTime;
 
                 Vector3 currentVelocityOnInputsPlane =
                     Vector3.ProjectOnPlane(currentVelocity, Motor.CharacterUp);
@@ -75,8 +84,18 @@ namespace EC.Core.SubStates {
                 currentVelocity += addedVelocity;
             }
 
-            // Gravity
-            currentVelocity += controllerData.Gravity * deltaTime;
+            // Velocity Verlet Gravity
+            float previousYVelocity = currentVelocity.y;
+            float newYVelocity;
+            if (isFalling) {
+                newYVelocity = previousYVelocity + (Gravity * fallMultiplier * deltaTime);
+            }
+            else {
+                newYVelocity = previousYVelocity + (Gravity * deltaTime);
+            }
+            
+            float nextYVelocity = (previousYVelocity + newYVelocity) * .5f;
+            currentVelocity.y = nextYVelocity;
 
             // Drag
             currentVelocity *= (1f / (1f + (controllerData.Drag * deltaTime)));

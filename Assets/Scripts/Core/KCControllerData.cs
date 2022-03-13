@@ -7,6 +7,7 @@ namespace EC.Core {
         public float MaxStableMoveSpeed = 10f;
         public float StableMovementSharpness = 15f;
         public float OrientationSharpness = 10f;
+        public float RotationSpeed = 10f;
         public OrientationMethod OrientationMethod = OrientationMethod.TowardsCamera;
         public AnimationCurve VelocityMagnitudeSpeedCurve;
 
@@ -20,6 +21,8 @@ namespace EC.Core {
         public bool AllowJumpingWhenSliding = false;
         public float JumpUpSpeed = 10f;
         public float JumpScalableForwardSpeed = 10f;
+        public float MaxJumpHeight = 1f;
+        public float MaxJumpTime = 0.5f;
         public float JumpPreGroundingGraceTime = 0f;
         public float JumpPostGroundingGraceTime = 0f;
         public float JumpCooldown = 0.2f;

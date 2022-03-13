@@ -212,6 +212,9 @@ namespace EC.Core {
             //     currentRotation = Quaternion.Euler(currentEuler);
             //     return;
             // }
+            
+            var pos = transform.position;
+            Debug.DrawLine(pos, pos + (Motor.CharacterForward * 2f), Color.red);
 
             if (_lockTarget) {
                 Vector3 dir = _lockTarget.position - transform.position;
@@ -223,7 +226,14 @@ namespace EC.Core {
                 //
                 // currentRotation = Quaternion.LookRotation(dir);
                 // return;
-                _lookInputVector = dir;
+                // _lookInputVector = dir;
+                var tr = Quaternion.LookRotation(dir);
+                Quaternion targetRotation = Quaternion.Slerp(
+                    currentRotation, tr,
+                    deltaTime * controllerData.RotationSpeed
+                );
+                currentRotation = targetRotation;
+                return;
             }
             
             if (_lookInputVector.sqrMagnitude > 0f && controllerData.OrientationSharpness > 0f) {
@@ -239,7 +249,6 @@ namespace EC.Core {
             Vector3 smoothedGravityDir = Vector3.Slerp(currentUp, Vector3.up,
                 1 - Mathf.Exp(-controllerData.BonusOrientationSharpness * deltaTime));
             currentRotation = Quaternion.FromToRotation(currentUp, smoothedGravityDir) * currentRotation;
-
         }
 
         /// <summary>

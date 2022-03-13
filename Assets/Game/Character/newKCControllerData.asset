@@ -12,9 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 273a3ea7339243f4aabd0bcd085bcc4f, type: 3}
   m_Name: newKCControllerData
   m_EditorClassIdentifier: 
-  MaxStableMoveSpeed: 6.45
+  MaxStableMoveSpeed: 6.54
   StableMovementSharpness: 10
   OrientationSharpness: 10
+  RotationSpeed: 10
   OrientationMethod: 1
   VelocityMagnitudeSpeedCurve:
     serializedVersion: 2
@@ -47,6 +48,8 @@ MonoBehaviour:
   AllowJumpingWhenSliding: 0
   JumpUpSpeed: 8
   JumpScalableForwardSpeed: 0
+  MaxJumpHeight: 1.5
+  MaxJumpTime: 0.5
   JumpPreGroundingGraceTime: 0
   JumpPostGroundingGraceTime: 0
   JumpCooldown: 0.2

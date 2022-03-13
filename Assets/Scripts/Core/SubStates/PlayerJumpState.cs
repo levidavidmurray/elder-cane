@@ -8,6 +8,10 @@ namespace EC.Core.SubStates {
         private KinematicCharacterMotor Motor;
         private int jumpsRemaining;
         private bool velocityDidUpdate;
+        
+        private float initialJumpVelocity;
+        private float maxJumpTime;
+        private float maxJumpHeight;
 
         public PlayerJumpState(KCController Controller, PlayerStateMachine stateMachine, KCControllerData controllerData) : base(Controller, stateMachine, controllerData) {
             ResetJumps();
@@ -16,9 +20,15 @@ namespace EC.Core.SubStates {
 
         public override void Enter() {
             base.Enter();
-            Controller.InputHandler.UseJumpInput();
             jumpsRemaining--;
             velocityDidUpdate = false;
+
+            maxJumpTime = controllerData.MaxJumpTime;
+            maxJumpHeight = controllerData.MaxJumpHeight;
+            
+            float timeToApex = maxJumpTime / 2f;
+            Controller.InAirState.Gravity = (-2 * maxJumpHeight) / (timeToApex * timeToApex);
+            initialJumpVelocity = (2 * maxJumpHeight) / timeToApex;
         }
 
         public override void LogicUpdate() {
@@ -47,8 +57,9 @@ namespace EC.Core.SubStates {
             Motor.ForceUnground();
         
             // Add to the return velocity and reset jump state
-            currentVelocity += (jumpDirection * controllerData.JumpUpSpeed) -
-                               Vector3.Project(currentVelocity, Motor.CharacterUp);
+            // currentVelocity += (jumpDirection * controllerData.JumpUpSpeed) -
+            //                    Vector3.Project(currentVelocity, Motor.CharacterUp);
+            currentVelocity.y = initialJumpVelocity;
             currentVelocity += (Controller.MoveInputVector * controllerData.JumpScalableForwardSpeed);
             
             velocityDidUpdate = true;
