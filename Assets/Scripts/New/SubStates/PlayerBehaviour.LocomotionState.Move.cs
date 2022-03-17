@@ -8,7 +8,7 @@ namespace New {
         [Serializable]
         public class MoveState : GroundedState {
             
-            [SerializeField] private float _SprintSpeed = 9f;
+            public float _SprintSpeed = 9f;
             [SerializeField] private float _SprintFadeSpeed = 2f;
             [SerializeField] private LinearMixerTransition _MoveAnim;
             

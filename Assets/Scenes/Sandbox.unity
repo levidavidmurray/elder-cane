@@ -18130,7 +18130,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 2963925322285440757}
+  - {fileID: 2963925322285565028}
   - {fileID: 1730030382}
   m_Father: {fileID: 0}
   m_RootOrder: 5
@@ -18200,13 +18200,13 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2963925322285440758}
+  m_GameObject: {fileID: 2963925322285340740}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0ad50f81b1d25c441943c37a89ba23f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _Animator: {fileID: 2963925322285440759}
+  _Animator: {fileID: 2963925322275957652}
   _ActionOnDisable: 0
 --- !u!114 &2772470754177771483
 MonoBehaviour:
@@ -18275,6 +18275,18 @@ MonoBehaviour:
     m_Bits: 4294967295
   ObstructionSharpness: 10000
   IgnoredColliders: []
+--- !u!95 &2963925322275957652 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 9500000, guid: d917c7129a9e4c74e84188b278d96de7,
+    type: 3}
+  m_PrefabInstance: {fileID: 2963925322285440756}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &2963925322285340740 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 100016, guid: d917c7129a9e4c74e84188b278d96de7,
+    type: 3}
+  m_PrefabInstance: {fileID: 2963925322285440756}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &2963925322285440756
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -18332,24 +18344,24 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d917c7129a9e4c74e84188b278d96de7, type: 3}
---- !u!4 &2963925322285440757 stripped
+--- !u!4 &2963925322285565028 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400016, guid: d917c7129a9e4c74e84188b278d96de7,
     type: 3}
   m_PrefabInstance: {fileID: 2963925322285440756}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &2963925322285440758 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 100016, guid: d917c7129a9e4c74e84188b278d96de7,
-    type: 3}
-  m_PrefabInstance: {fileID: 2963925322285440756}
+--- !u!114 &2963925322285565029
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
---- !u!95 &2963925322285440759 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 9500000, guid: d917c7129a9e4c74e84188b278d96de7,
-    type: 3}
-  m_PrefabInstance: {fileID: 2963925322285440756}
-  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2963925322285340740}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49f8d5aed452fcb4cb3cb61b39026afb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &3134467406530139579
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -18565,6 +18577,59 @@ MonoBehaviour:
       - 2
       _DefaultParameter: 0
       _ExtrapolateSpeed: 1
+  _RollState:
+    _MoveSpeed: 0
+    _AddedRollSpeed: 8
+    _RollSpeedOverLifetimeCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: 4.3207855
+        outSlope: 4.3207855
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.5053764
+      - serializedVersion: 3
+        time: 0.49999997
+        value: 1
+        inSlope: -Infinity
+        outSlope: 0
+        tangentMode: 1
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 0.9215698
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 136
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    _RollAnim:
+      _FadeDuration: 0.25
+      _Events:
+        _NormalizedTimes: []
+        _Callbacks: []
+        _Names: []
+      _Speed: 1
+      _Animations:
+      - {fileID: 7400000, guid: d21c3de9b6a074f4a84fbaf49e2157c9, type: 3}
+      - {fileID: 7400000, guid: 5e2088b84bb8ec9469e31b74a9e6b727, type: 3}
+      _Speeds: []
+      _SynchronizeChildren: 
+      _Thresholds:
+      - 0
+      - 1
+      _DefaultParameter: 0
+      _ExtrapolateSpeed: 1
 --- !u!114 &6177337246039337434
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18659,6 +18724,10 @@ MonoBehaviour:
       m_Calls: []
     m_ActionId: 0a9cfd01-e867-4373-a2b0-9c387981946d
     m_ActionName: UI/TrackedDeviceOrientation
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: ffb22994-b449-4559-9537-0b64813cbb52
+    m_ActionName: Game/Sprint[/XInputControllerWindows/buttonEast]
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: Gamepad
   m_DefaultActionMap: Game

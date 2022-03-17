@@ -8,9 +8,8 @@ namespace New {
         
         [Serializable]
         public abstract class LocomotionState : State {
+            public float _MoveSpeed;
 
-            [SerializeField] protected float _MoveSpeed;
-            
             /************************************************************************************************************************/
             
             protected KinematicCharacterMotor Motor;
@@ -25,13 +24,12 @@ namespace New {
 
             // _MoveSpeed is set independently for each LocomotionState (Idle, Move, Jump, etc.)
             public virtual void UpdateVelocity(ref Vector3 currentVelocity, float deltaTime) {
-                float currentVelocityMagnitude = currentVelocity.magnitude;
     
                 Vector3 effectiveGroundNormal = Motor.GroundingStatus.GroundNormal;
     
                 // Reorient velocity on slope
                 currentVelocity = Motor.GetDirectionTangentToSurface(currentVelocity, effectiveGroundNormal) *
-                                  currentVelocityMagnitude;
+                                  currentVelocity.magnitude;
     
                 // Calculate target velocity
                 Vector3 reorientedInput = ReorientedInput();

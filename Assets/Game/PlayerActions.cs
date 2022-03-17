@@ -60,7 +60,7 @@ public partial class @PlayerActions : IInputActionCollection2, IDisposable
                     ""id"": ""ffb22994-b449-4559-9537-0b64813cbb52"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """",
+                    ""interactions"": ""Hold(duration=0.3)"",
                     ""initialStateCheck"": false
                 },
                 {
@@ -69,7 +69,7 @@ public partial class @PlayerActions : IInputActionCollection2, IDisposable
                     ""id"": ""9237d65c-83d6-4103-95ed-f5a23cd9962e"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """",
+                    ""interactions"": ""Tap(duration=0.3)"",
                     ""initialStateCheck"": false
                 },
                 {
@@ -281,7 +281,7 @@ public partial class @PlayerActions : IInputActionCollection2, IDisposable
                     ""name"": """",
                     ""id"": ""db545d0c-e7ac-4c01-ae52-c67870f73d1e"",
                     ""path"": ""<Gamepad>/buttonEast"",
-                    ""interactions"": ""Tap"",
+                    ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""Gamepad"",
                     ""action"": ""Roll"",
@@ -336,7 +336,7 @@ public partial class @PlayerActions : IInputActionCollection2, IDisposable
                     ""name"": """",
                     ""id"": ""d81be7f8-b01e-440f-ba64-3323bd7bb8bc"",
                     ""path"": ""<Gamepad>/buttonEast"",
-                    ""interactions"": ""Hold"",
+                    ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""Gamepad"",
                     ""action"": ""Sprint"",

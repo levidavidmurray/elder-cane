@@ -52,6 +52,7 @@ namespace New {
         [SerializeField] private JumpState _JumpState;
         [SerializeField] private InAirState _InAirState;
         [SerializeField] private LandState _LandState;
+        [SerializeField] private RollState _RollState;
         
         // [Foldout("Action States", styled = true)]
         private readonly StateMachine<ActionState> ActionStateMachine = new();
@@ -93,7 +94,11 @@ namespace New {
             UpdateBlackboard();
             LocomotionStateMachine.CurrentState.Update();
         }
-        
+
+        private void FixedUpdate() {
+            LocomotionStateMachine.CurrentState.FixedUpdate();
+        }
+
         #endregion
         
         /************************************************************************************************************************/

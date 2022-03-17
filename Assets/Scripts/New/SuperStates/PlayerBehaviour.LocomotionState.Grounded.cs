@@ -30,8 +30,7 @@ namespace New {
                 }
 
                 if (Instance.IsRolling) {
-                    log("DO ROLL!");
-                    Instance.OnEnterRollState(this);
+                    StateMachine.TrySetState(Instance._RollState);
                 }
                 
             }
