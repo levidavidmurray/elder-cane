@@ -35,8 +35,12 @@ namespace New {
                 float inputMag = Instance.MoveInput.magnitude;
 
                 if (inputMag >= 0.9f && Instance.IsSprinting) {
-                    _MoveSpeed = _SprintSpeed;
-                    _MoveAnim.State.Parameter = 2f;
+                    _MoveAnim.State.Parameter = Mathf.MoveTowards(
+                        _MoveAnim.State.Parameter,
+                        2f,
+                        Time.deltaTime * _SprintFadeSpeed
+                    );
+                    _MoveSpeed = _SprintSpeed * (_MoveAnim.State.Parameter / 2f);
                     
                     return;
                 }
