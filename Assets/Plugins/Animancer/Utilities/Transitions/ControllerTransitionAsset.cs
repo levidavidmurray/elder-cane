@@ -16,9 +16,6 @@ namespace Animancer
 {
     /// <inheritdoc/>
     /// https://kybernetik.com.au/animancer/api/Animancer/ControllerTransitionAsset
-#if !UNITY_EDITOR
-    [System.Obsolete(Validate.ProOnlyMessage)]
-#endif
     [CreateAssetMenu(menuName = Strings.MenuPrefix + "Controller Transition/Base", order = Strings.AssetMenuOrder + 5)]
     [HelpURL(Strings.DocsURLs.APIDocumentation + "/" + nameof(ControllerTransitionAsset))]
     public class ControllerTransitionAsset : AnimancerTransitionAsset<ControllerTransition>
@@ -36,9 +33,6 @@ namespace Animancer
     /// <inheritdoc/>
     /// https://kybernetik.com.au/animancer/api/Animancer/ControllerTransition_1
     [Serializable]
-#if ! UNITY_EDITOR
-    [System.Obsolete(Validate.ProOnlyMessage)]
-#endif
     public abstract class ControllerTransition<TState> : AnimancerTransition<TState>, IAnimationClipCollection
         where TState : ControllerState
     {
@@ -115,12 +109,7 @@ namespace Animancer
         /************************************************************************************************************************/
 
         /// <inheritdoc/>
-        public override bool IsValid
-#if UNITY_EDITOR
-            => _Controller != null;
-#else
-            => false;
-#endif
+        public override bool IsValid => _Controller != null;
 
         /************************************************************************************************************************/
 
@@ -176,9 +165,6 @@ namespace Animancer
     /// <inheritdoc/>
     /// https://kybernetik.com.au/animancer/api/Animancer/ControllerTransition
     [Serializable]
-#if ! UNITY_EDITOR
-    [System.Obsolete(Validate.ProOnlyMessage)]
-#endif
     public class ControllerTransition : ControllerTransition<ControllerState>, ControllerState.ITransition
     {
         /************************************************************************************************************************/

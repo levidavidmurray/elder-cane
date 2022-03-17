@@ -4,7 +4,6 @@
 
 using System;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace Animancer.Examples.Events
 {
@@ -97,7 +96,7 @@ namespace Animancer.Examples.Events
         /// </remarks>
         protected void Update()
         {
-            if (Mouse.current.leftButton.wasPressedThisFrame)
+            if (Input.GetMouseButtonDown(0))
             {
                 switch (CurrentState)
                 {

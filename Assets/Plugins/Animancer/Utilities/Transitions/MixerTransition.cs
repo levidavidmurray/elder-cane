@@ -15,9 +15,6 @@ namespace Animancer
     /// <inheritdoc/>
     /// https://kybernetik.com.au/animancer/api/Animancer/MixerTransition_2
     [Serializable]
-#if ! UNITY_EDITOR
-    [System.Obsolete(Validate.ProOnlyMessage)]
-#endif
     public abstract class MixerTransition<TMixer, TParameter> : ManualMixerTransition<TMixer>
         where TMixer : MixerState<TParameter>
     {

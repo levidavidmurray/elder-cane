@@ -1,7 +1,6 @@
 // Animancer // https://kybernetik.com.au/animancer // Copyright 2021 Kybernetik //
 
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace Animancer.Examples
 {
@@ -54,30 +53,29 @@ namespace Animancer.Examples
                 return;
             }
 #endif
-            var mousePos = Mouse.current.position.ReadValue();
 
-            if (_MouseButton == MouseButton.Automatic || Mouse.current.rightButton.isPressed)
+            if (_MouseButton == MouseButton.Automatic || Input.GetMouseButton((int)_MouseButton))
             {
-                // var movement = mousePos;
-                // Mouse.current.position.x.
-                //
-                // if (movement != default)
-                // {
-                //     var euler = transform.localEulerAngles;
-                //     euler.y += movement.x * _Sensitivity.x;
-                //     euler.x += movement.y * _Sensitivity.y;
-                //     if (euler.x > 180)
-                //         euler.x -= 360;
-                //     euler.x = Mathf.Clamp(euler.x, -80, 80);
-                //     transform.localEulerAngles = euler;
-                // }
+                var movement = new Vector2(
+                    Input.GetAxis("Mouse X"),
+                    Input.GetAxis("Mouse Y"));
+
+                if (movement != default)
+                {
+                    var euler = transform.localEulerAngles;
+                    euler.y += movement.x * _Sensitivity.x;
+                    euler.x += movement.y * _Sensitivity.y;
+                    if (euler.x > 180)
+                        euler.x -= 360;
+                    euler.x = Mathf.Clamp(euler.x, -80, 80);
+                    transform.localEulerAngles = euler;
+                }
             }
 
-            
-            var zoom = Mouse.current.scroll.y.ReadValue() * _Sensitivity.z;
+            var zoom = Input.mouseScrollDelta.y * _Sensitivity.z;
             if (zoom != 0 &&
-                mousePos.x >= 0 && mousePos.x <= Screen.width &&
-                mousePos.y >= 0 && mousePos.y <= Screen.height)
+                Input.mousePosition.x >= 0 && Input.mousePosition.x <= Screen.width &&
+                Input.mousePosition.y >= 0 && Input.mousePosition.y <= Screen.height)
             {
                 _Distance *= 1 + zoom;
             }

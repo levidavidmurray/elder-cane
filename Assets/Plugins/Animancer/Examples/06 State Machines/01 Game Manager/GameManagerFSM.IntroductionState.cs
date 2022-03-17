@@ -5,7 +5,6 @@
 using Animancer.Units;
 using System;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace Animancer.Examples.StateMachines.GameManager
 {
@@ -56,7 +55,7 @@ namespace Animancer.Examples.StateMachines.GameManager
                 lookAt.y += 1;
                 camera.position = lookAt - camera.forward * _OrbitRadius;
 
-                if (Mouse.current.leftButton.wasReleasedThisFrame)
+                if (Input.GetMouseButtonUp(0))
                     Instance.StateMachine.TrySetState(Instance._Ready);
             }
 

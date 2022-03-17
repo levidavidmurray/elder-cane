@@ -5,7 +5,6 @@
 using Animancer.FSM;
 using Animancer.Units;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace Animancer.Examples.StateMachines.Brains
 {
@@ -44,11 +43,11 @@ namespace Animancer.Examples.StateMachines.Brains
 
         private void UpdateInput()
         {
-            if (Mouse.current.leftButton.isPressed)
+            if (Input.GetMouseButton(0))
             {
                 var characterPosition = Character.Rigidbody.position;
 
-                var ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
+                var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
                 if (Physics.Raycast(ray, out var raycastHit))
                 {

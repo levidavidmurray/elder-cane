@@ -18,8 +18,8 @@ namespace EC.Control {
         public Vector2 LookInput { get; private set; }
         public bool JumpInput { get; private set; }
         public bool JumpInputStop { get; private set; }
+        public bool SprintInput { get; private set; }
         public bool RollInput { get; private set; }
-        public bool RollInputStop { get; private set; }
         public bool AttackLightInput { get; private set; }
         public bool AttackLightInputStop { get; private set; }
         public bool AttackHeavyInput { get; private set; }
@@ -44,15 +44,17 @@ namespace EC.Control {
         private void Update() {
             CheckAttackInputHoldTime();
             CheckJumpInputHoldTime();
-            CheckRollInputHoldTime();
         }
 
         private void InitializeInputActions() {
             _PlayerActions = new PlayerActions();
             GameActions = _PlayerActions.Game;
             
+            EnableAll(GameActions.Reset, OnReset);
             EnableAll(GameActions.Move, OnMove);
             EnableAll(GameActions.Jump, OnJump);
+            EnableAll(GameActions.Sprint, OnSprint);
+            EnableAll(GameActions.Roll, OnRoll);
         }
 
         private void EnableAll(InputAction action, Action<InputAction.CallbackContext> actionCb) {
@@ -86,15 +88,17 @@ namespace EC.Control {
             // }
         }
 
+        public void OnSprint(InputAction.CallbackContext context) {
+            if (context.performed)
+                SprintInput = true;
+            if (context.canceled)
+                SprintInput = false;
+        }
+        
         public void OnRoll(InputAction.CallbackContext context) {
-            if (context.started) {
+            if (context.performed) {
                 RollInput = true;
-                RollInputStop = false;
                 rollInputStartTime = Time.time;
-            }
-
-            if (context.canceled) {
-                RollInputStop = true;
             }
         }
 

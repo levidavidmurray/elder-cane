@@ -7,9 +7,6 @@ namespace Animancer
 {
     /// <inheritdoc/>
     /// https://kybernetik.com.au/animancer/api/Animancer/Float2ControllerTransitionAsset
-#if !UNITY_EDITOR
-    [System.Obsolete(Validate.ProOnlyMessage)]
-#endif
     [CreateAssetMenu(menuName = Strings.MenuPrefix + "Controller Transition/Float 2", order = Strings.AssetMenuOrder + 7)]
     [HelpURL(Strings.DocsURLs.APIDocumentation + "/" + nameof(Float2ControllerTransitionAsset))]
     public class Float2ControllerTransitionAsset : AnimancerTransitionAsset<Float2ControllerTransition>
@@ -25,9 +22,6 @@ namespace Animancer
     /// <inheritdoc/>
     /// https://kybernetik.com.au/animancer/api/Animancer/Float2ControllerTransition
     [Serializable]
-#if ! UNITY_EDITOR
-    [System.Obsolete(Validate.ProOnlyMessage)]
-#endif
     public class Float2ControllerTransition : ControllerTransition<Float2ControllerState>, Float2ControllerState.ITransition
     {
         /************************************************************************************************************************/

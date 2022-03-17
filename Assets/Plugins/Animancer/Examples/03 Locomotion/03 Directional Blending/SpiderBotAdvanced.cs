@@ -1,14 +1,10 @@
 // Animancer // https://kybernetik.com.au/animancer // Copyright 2021 Kybernetik //
 
-#if ! UNITY_EDITOR
-#pragma warning disable CS0618 // Type or member is obsolete (for MixerState in Animancer Lite).
-#endif
 #pragma warning disable CS0649 // Field is never assigned to, and will always have its default value.
 
 using Animancer.Examples.FineControl;
 using Animancer.Units;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace Animancer.Examples.Locomotion
 {
@@ -86,7 +82,7 @@ namespace Animancer.Examples.Locomotion
                     Vector3.Dot(transform.forward, _MovementDirection));
 
                 // Set its speed depending on whether you are sprinting or not.
-                var isSprinting = Mouse.current.leftButton.isPressed;
+                var isSprinting = Input.GetMouseButton(0);
                 _Move.State.Speed = isSprinting ? _SprintMultiplier : 1;
             }
             else// Otherwise stop it entirely.
@@ -101,7 +97,7 @@ namespace Animancer.Examples.Locomotion
         private Vector3 GetMovementDirection()
         {
             // Get a ray from the main camera in the direction of the mouse cursor.
-            var ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
+            var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
             // Do a raycast with it and stop trying to move it it does not hit anything.
             // Note that this object is set to the Ignore Raycast layer so that the raycast will not hit it.

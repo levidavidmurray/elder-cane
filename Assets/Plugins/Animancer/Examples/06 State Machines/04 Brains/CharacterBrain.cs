@@ -53,7 +53,6 @@ namespace Animancer.Examples.StateMachines.Brains
 
         /// <summary>The direction this brain wants to move.</summary>
         public Vector3 MovementDirection { get; protected set; }
-        public Vector2 MoveInput { get; protected set; }
 
         /// <summary>Indicates whether this brain wants to run.</summary>
         public bool IsRunning { get; protected set; }

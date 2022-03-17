@@ -8,9 +8,6 @@ namespace Animancer
 {
     /// <inheritdoc/>
     /// https://kybernetik.com.au/animancer/api/Animancer/LinearMixerTransitionAsset
-#if !UNITY_EDITOR
-    [System.Obsolete(Validate.ProOnlyMessage)]
-#endif
     [CreateAssetMenu(menuName = Strings.MenuPrefix + "Mixer Transition/Linear", order = Strings.AssetMenuOrder + 3)]
     [HelpURL(Strings.DocsURLs.APIDocumentation + "/" + nameof(LinearMixerTransitionAsset))]
     public class LinearMixerTransitionAsset : AnimancerTransitionAsset<LinearMixerTransition>
@@ -26,9 +23,6 @@ namespace Animancer
     /// <inheritdoc/>
     /// https://kybernetik.com.au/animancer/api/Animancer/LinearMixerTransition
     [Serializable]
-#if ! UNITY_EDITOR
-    [System.Obsolete(Validate.ProOnlyMessage)]
-#endif
     public class LinearMixerTransition : MixerTransition<LinearMixerState, float>, LinearMixerState.ITransition
     {
         /************************************************************************************************************************/

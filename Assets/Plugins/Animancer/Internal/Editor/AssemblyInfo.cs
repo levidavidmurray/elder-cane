@@ -5,7 +5,7 @@ using System.Reflection;
 
 [assembly: AssemblyTitle("Animancer")]
 [assembly: AssemblyDescription("An animation system for Unity which is based on the Playables API.")]
-[assembly: AssemblyProduct("Animancer Lite")]
+[assembly: AssemblyProduct("Animancer Pro")]
 [assembly: AssemblyCompany("Kybernetik")]
 [assembly: AssemblyCopyright("Copyright © Kybernetik 2021")]
 [assembly: AssemblyVersion("7.2.0.0")]

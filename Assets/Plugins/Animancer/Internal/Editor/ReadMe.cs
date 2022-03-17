@@ -57,7 +57,7 @@ namespace Animancer.Editor
         protected virtual string ReleaseNumberPrefKey => nameof(Animancer) + "." + nameof(ReleaseNumber);
 
         /// <summary>The name of this product.</summary>
-        protected virtual string ProductName => Strings.ProductName + " Lite";
+        protected virtual string ProductName => Strings.ProductName + " Pro";
 
         /// <summary>The URL for the documentation.</summary>
         protected virtual string DocumentationURL => Strings.DocsURLs.Documentation;
@@ -689,71 +689,6 @@ namespace Animancer.Editor
         #endregion
         /************************************************************************************************************************/
     }
-
-    /************************************************************************************************************************/
-    #region UnityVersionChecker
-    // This class isn't in its own file because files don't get removed when upgrading from Animancer Lite to Pro.
-    /************************************************************************************************************************/
-
-    /// <summary>[Editor-Only] [Lite-Only]
-    /// Validates that the Animancer.Lite.dll is the correct one for this version of Unity.
-    /// </summary>
-    [InitializeOnLoad]
-    internal static class UnityVersionChecker
-    {
-        /************************************************************************************************************************/
-
-        const string ExpectedAssemblyTarget =
-#if UNITY_2021_2_OR_NEWER
-            "2021.2";
-#elif UNITY_2021_1_OR_NEWER
-            "2021.1";
-#elif UNITY_2020_1_OR_NEWER
-            "2020.1";
-#else
-            "2019.4";
-#endif
-
-        /************************************************************************************************************************/
-
-        static UnityVersionChecker()
-        {
-            const string SessionStateKey = nameof(Animancer) + "." + nameof(UnityVersionChecker);
-
-            if (SessionState.GetBool(SessionStateKey, false))
-                return;
-
-            SessionState.SetBool(SessionStateKey, true);
-
-            var assembly = typeof(AnimancerEditorUtilities).Assembly;
-            var attributes = assembly.GetCustomAttributes(typeof(System.Reflection.AssemblyDescriptionAttribute), false);
-            if (attributes.Length != 1)
-            {
-                Debug.LogWarning($"{assembly.FullName} has {attributes.Length} [AssemblyDescription] attributes.");
-                return;
-            }
-
-            var attribute = (System.Reflection.AssemblyDescriptionAttribute)attributes[0];
-            if (attribute.Description.EndsWith("Unity " + ExpectedAssemblyTarget + "+."))
-                return;
-
-            var actualAssemblyTarget = attribute.Description.Substring(attribute.Description.Length - 14, 13);
-            if (!actualAssemblyTarget.StartsWith("Unity "))
-                actualAssemblyTarget = "[Unknown]";
-
-            Debug.LogWarning($"{assembly.GetName().Name}.dll was compiled for {actualAssemblyTarget}" +
-                $" but the correct target for this version of Unity would be {ExpectedAssemblyTarget}+." +
-                $"\nYou should download the appropriate version of Animancer from https://kybernetik.com.au/animancer/lite" +
-                $"\nOr you could ignore this warning and delete this file to disable it," +
-                $" but then some features might not work correctly.");
-        }
-
-        /************************************************************************************************************************/
-    }
-
-    /************************************************************************************************************************/
-    #endregion
-    /************************************************************************************************************************/
 }
 
 #endif

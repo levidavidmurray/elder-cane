@@ -16,9 +16,6 @@ namespace Animancer
     /// <inheritdoc/>
     /// https://kybernetik.com.au/animancer/api/Animancer/ManualMixerTransition
     [Serializable]
-#if !UNITY_EDITOR
-    [System.Obsolete(Validate.ProOnlyMessage)]
-#endif
     public class ManualMixerTransition : ManualMixerTransition<ManualMixerState>, ManualMixerState.ITransition
     {
         /************************************************************************************************************************/

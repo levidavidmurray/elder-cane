@@ -10,8 +10,8 @@ namespace New {
         TowardsCamera,
         TowardsMovement,
     }
-    
-    public sealed partial class PlayerBehaviour : MonoBehaviour, ICharacterController {
+
+    public sealed partial class PlayerBehaviour : MonoBehaviour, ICharacterController, ICharacterBehaviour {
         
         public static PlayerBehaviour Instance { get; private set; }
         
@@ -27,11 +27,18 @@ namespace New {
         
         /************************************************************************************************************************/
         
+        #region Blackboard
+        
         public Vector2 MoveInput { get; private set; }
         public Vector3 MoveInputVector { get; private set; }
         public Vector3 LookInputVector { get; private set; }
-        public bool IsGrounded { get; private set; }
         public Vector3 VelocityLastTick { get; private set; }
+        public bool IsGrounded { get; private set; }
+        public bool IsJumping { get; private set; }
+        public bool IsSprinting { get; private set; }
+        public bool IsRolling { get; private set; }
+        
+        #endregion
         
         /************************************************************************************************************************/
         
@@ -39,13 +46,22 @@ namespace New {
         
         private readonly StateMachine<LocomotionState> LocomotionStateMachine = new();
         
+        [Foldout("Locomotion States", styled = true)]
         [SerializeField] private IdleState _IdleState;
-        [SerializeField] private LandState _LandState;
+        [SerializeField] private MoveState _MoveState;
         [SerializeField] private JumpState _JumpState;
+        [SerializeField] private InAirState _InAirState;
+        [SerializeField] private LandState _LandState;
         
+        // [Foldout("Action States", styled = true)]
         private readonly StateMachine<ActionState> ActionStateMachine = new();
         
         #endregion
+        
+        /************************************************************************************************************************/
+        
+        private Vector3 _SpawnPosition;
+        private bool _FreezeVelocityThisTick;
 
         /************************************************************************************************************************/
 
@@ -58,7 +74,14 @@ namespace New {
         private void Awake() {
             AnimancerUtilities.Assert(Instance == null, $"The {nameof(PlayerBehaviour)}.{nameof(Instance)} is already assigned.");
             Instance = this;
+            _SpawnPosition = transform.position;
             LocomotionStateMachine.ForceSetState(_IdleState);
+
+            InputHandler.OnResetCb += _ => {
+                Motor.SetPosition(_SpawnPosition);
+                _FreezeVelocityThisTick = true;
+                LocomotionStateMachine.ForceSetState(_IdleState);
+            };
         }
 
         private void Start() {
@@ -68,13 +91,12 @@ namespace New {
         private void Update()
         {
             UpdateBlackboard();
-            
             LocomotionStateMachine.CurrentState.Update();
         }
         
         #endregion
         
-        /************************************ Kinematic Character Controller ***************************************************/
+        /************************************************************************************************************************/
 
         #region Kinematic Character Controller
         /// <summary>
@@ -113,6 +135,12 @@ namespace New {
         /// </summary>
         public void UpdateVelocity(ref Vector3 currentVelocity, float deltaTime) {
             LocomotionStateMachine.CurrentState.UpdateVelocity(ref currentVelocity, deltaTime);
+
+            if (_FreezeVelocityThisTick) {
+                currentVelocity = Vector3.zero;
+                _FreezeVelocityThisTick = false;
+            }
+            
             VelocityLastTick = currentVelocity;
         }
 
@@ -153,11 +181,29 @@ namespace New {
         #endregion
         
         /************************************************************************************************************************/
+
+        #region State Callbacks
+        
+        public void OnEnterGroundedState(GroundedState state) {
+            if (state == _JumpState) return;
+            InputHandler.UseJumpInput();
+        }
+        
+        public void OnEnterRollState(GroundedState state) {
+            InputHandler.UseRollInput();
+        }
+        
+        #endregion
+        
+        /************************************************************************************************************************/
         
         #region Helper Functions
         
         private void UpdateBlackboard() {
             MoveInput = InputHandler.MoveInput;
+            IsJumping = InputHandler.JumpInput;
+            IsSprinting = InputHandler.SprintInput;
+            IsRolling = InputHandler.RollInput;
             
             Vector3 cameraPlanarDirection = Vector3.zero;
             MoveInputVector = CalculateMoveInputVector(MoveInput, ref cameraPlanarDirection);

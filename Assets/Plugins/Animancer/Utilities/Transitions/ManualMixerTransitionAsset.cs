@@ -10,9 +10,6 @@ namespace Animancer
 {
     /// <inheritdoc/>
     /// https://kybernetik.com.au/animancer/api/Animancer/ManualMixerTransitionAsset
-#if !UNITY_EDITOR
-    [System.Obsolete(Validate.ProOnlyMessage)]
-#endif
     [CreateAssetMenu(menuName = Strings.MenuPrefix + "Mixer Transition/Manual", order = Strings.AssetMenuOrder + 2)]
     [HelpURL(Strings.DocsURLs.APIDocumentation + "/" + nameof(ManualMixerTransitionAsset))]
     public class ManualMixerTransitionAsset : AnimancerTransitionAsset<ManualMixerTransition>
@@ -27,9 +24,6 @@ namespace Animancer
 
     /// <inheritdoc/>
     /// https://kybernetik.com.au/animancer/api/Animancer/ManualMixerTransition_1
-#if !UNITY_EDITOR
-    [System.Obsolete(Validate.ProOnlyMessage)]
-#endif
     [Serializable]
     public abstract class ManualMixerTransition<TMixer> : AnimancerTransition<TMixer>, IMotion, IAnimationClipCollection
         where TMixer : ManualMixerState
@@ -214,11 +208,7 @@ namespace Animancer
                     if (_Animations[i] == null)
                         return false;
 
-#if UNITY_EDITOR
                 return true;
-#else
-                return false;
-#endif
             }
         }
 

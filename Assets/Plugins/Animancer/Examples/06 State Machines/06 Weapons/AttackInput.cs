@@ -2,7 +2,6 @@
 
 #pragma warning disable CS0649 // Field is never assigned to, and will always have its default value.
 
-using System;
 using Animancer.Examples.StateMachines.Brains;
 using Animancer.FSM;
 using Animancer.Units;
@@ -34,9 +33,6 @@ namespace Animancer.Examples.StateMachines.Weapons
         private void Awake()
         {
             _InputBuffer = new StateMachine<CharacterState>.InputBuffer(_Attack.Character.StateMachine);
-        }
-
-        private void Start() {
         }
 
         /************************************************************************************************************************/

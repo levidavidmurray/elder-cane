@@ -2,10 +2,8 @@
 
 #pragma warning disable CS0649 // Field is never assigned to, and will always have its default value.
 
-using System;
 using Animancer.FSM;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace Animancer.Examples.StateMachines.Brains
 {
@@ -20,28 +18,13 @@ namespace Animancer.Examples.StateMachines.Brains
         /************************************************************************************************************************/
 
         [SerializeField] private CharacterState _Locomotion;
-        
-        private AnimancerTestInput TestInput;
-        private InputAction _MoveInputAction;
 
         /************************************************************************************************************************/
 
-        private void Awake() {
-            TestInput = new AnimancerTestInput();
-        }
-
-        private void OnEnable() {
-            _MoveInputAction = TestInput.Player.Move;
-            _MoveInputAction.Enable();
-            
-            TestInput.Player.Run.Enable();
-            TestInput.Player.Attack.Enable();
-        }
-
         private void Update()
         {
-            MoveInput = _MoveInputAction.ReadValue<Vector2>();
-            if (MoveInput != default)
+            var input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+            if (input != default)
             {
                 // Get the camera's forward and right vectors and flatten them onto the XZ plane.
                 var camera = Camera.main.transform;
@@ -56,10 +39,12 @@ namespace Animancer.Examples.StateMachines.Brains
 
                 // Build the movement vector by multiplying the input by those axes.
                 MovementDirection =
-                    right * MoveInput.x +
-                    forward * MoveInput.y;
+                    right * input.x +
+                    forward * input.y;
 
-                IsRunning = TestInput.Player.Run.inProgress;
+                // Determine if the player wants to run or not.
+                IsRunning = Input.GetButton("Fire3");// Left Shift by default.
+
                 // Enter the locomotion state if we aren't already in it.
                 _Locomotion.TryEnterState();
             }

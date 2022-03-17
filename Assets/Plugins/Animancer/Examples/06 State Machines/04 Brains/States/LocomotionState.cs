@@ -1,8 +1,5 @@
 // Animancer // https://kybernetik.com.au/animancer // Copyright 2021 Kybernetik //
 
-#if ! UNITY_EDITOR
-#pragma warning disable CS0618 // Type or member is obsolete (for LinearMixerTransition in Animancer Lite).
-#endif
 #pragma warning disable CS0649 // Field is never assigned to, and will always have its default value.
 
 using UnityEngine;
@@ -43,16 +40,9 @@ namespace Animancer.Examples.StateMachines.Brains
 
         /************************************************************************************************************************/
 
-        private void UpdateSpeed() {
-            var target = Character.Brain.MoveInput.magnitude;
-
-            if (Character.Brain.IsRunning) {
-                if (_Animation.State.Parameter < 1f)
-                    _Animation.State.Parameter = 1f;
-                
-                target = 1.5f;
-            }
-            
+        private void UpdateSpeed()
+        {
+            var target = Character.Brain.IsRunning ? 1 : 0;
             _Animation.State.Parameter = Mathf.MoveTowards(_Animation.State.Parameter, target, _FadeSpeed * Time.deltaTime);
         }
 

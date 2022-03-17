@@ -8,11 +8,12 @@ namespace New {
         public class JumpState : GroundedState {
             
             [SerializeField] private float _FadeSpeed = 0.25f;
-            [SerializeField] private AnimationClip _JumpClip;
             [SerializeField] private int _JumpCount;
             [SerializeField] private float _ForwardSpeedScale = 0f;
             [SerializeField] private float _MaxJumpTime;
             [SerializeField] private float _MaxJumpHeight;
+            
+            [SerializeField] private AnimationClip _JumpClip;
             
             /************************************************************************************************************************/
 

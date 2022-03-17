@@ -13,7 +13,7 @@ namespace New {
                 base.OnEnterState();
                 
                 Instance._JumpState.ResetJumps();
-                Instance.InputHandler.UseJumpInput();
+                Instance.OnEnterGroundedState(this);
             }
 
             public override void Update() {
@@ -24,9 +24,16 @@ namespace New {
                     return;
                 }
 
-                if (Instance.InputHandler.JumpInput) {
+                if (Instance.IsJumping) {
                     StateMachine.TrySetState(Instance._JumpState);
+                    return;
                 }
+
+                if (Instance.IsRolling) {
+                    log("DO ROLL!");
+                    Instance.OnEnterRollState(this);
+                }
+                
             }
             
             /************************************************************************************************************************/

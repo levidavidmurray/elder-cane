@@ -55,6 +55,15 @@ public partial class @PlayerActions : IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
+                    ""name"": ""Sprint"",
+                    ""type"": ""Button"",
+                    ""id"": ""ffb22994-b449-4559-9537-0b64813cbb52"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
                     ""name"": ""Roll"",
                     ""type"": ""Button"",
                     ""id"": ""9237d65c-83d6-4103-95ed-f5a23cd9962e"",
@@ -272,7 +281,7 @@ public partial class @PlayerActions : IInputActionCollection2, IDisposable
                     ""name"": """",
                     ""id"": ""db545d0c-e7ac-4c01-ae52-c67870f73d1e"",
                     ""path"": ""<Gamepad>/buttonEast"",
-                    ""interactions"": """",
+                    ""interactions"": ""Tap"",
                     ""processors"": """",
                     ""groups"": ""Gamepad"",
                     ""action"": ""Roll"",
@@ -320,6 +329,17 @@ public partial class @PlayerActions : IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": ""Keyboard&Mouse"",
                     ""action"": ""AttackLight"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""d81be7f8-b01e-440f-ba64-3323bd7bb8bc"",
+                    ""path"": ""<Gamepad>/buttonEast"",
+                    ""interactions"": ""Hold"",
+                    ""processors"": """",
+                    ""groups"": ""Gamepad"",
+                    ""action"": ""Sprint"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -910,6 +930,7 @@ public partial class @PlayerActions : IInputActionCollection2, IDisposable
         m_Game_Move = m_Game.FindAction("Move", throwIfNotFound: true);
         m_Game_Look = m_Game.FindAction("Look", throwIfNotFound: true);
         m_Game_Jump = m_Game.FindAction("Jump", throwIfNotFound: true);
+        m_Game_Sprint = m_Game.FindAction("Sprint", throwIfNotFound: true);
         m_Game_Roll = m_Game.FindAction("Roll", throwIfNotFound: true);
         m_Game_Reset = m_Game.FindAction("Reset", throwIfNotFound: true);
         m_Game_LockTarget = m_Game.FindAction("LockTarget", throwIfNotFound: true);
@@ -988,6 +1009,7 @@ public partial class @PlayerActions : IInputActionCollection2, IDisposable
     private readonly InputAction m_Game_Move;
     private readonly InputAction m_Game_Look;
     private readonly InputAction m_Game_Jump;
+    private readonly InputAction m_Game_Sprint;
     private readonly InputAction m_Game_Roll;
     private readonly InputAction m_Game_Reset;
     private readonly InputAction m_Game_LockTarget;
@@ -999,6 +1021,7 @@ public partial class @PlayerActions : IInputActionCollection2, IDisposable
         public InputAction @Move => m_Wrapper.m_Game_Move;
         public InputAction @Look => m_Wrapper.m_Game_Look;
         public InputAction @Jump => m_Wrapper.m_Game_Jump;
+        public InputAction @Sprint => m_Wrapper.m_Game_Sprint;
         public InputAction @Roll => m_Wrapper.m_Game_Roll;
         public InputAction @Reset => m_Wrapper.m_Game_Reset;
         public InputAction @LockTarget => m_Wrapper.m_Game_LockTarget;
@@ -1021,6 +1044,9 @@ public partial class @PlayerActions : IInputActionCollection2, IDisposable
                 @Jump.started -= m_Wrapper.m_GameActionsCallbackInterface.OnJump;
                 @Jump.performed -= m_Wrapper.m_GameActionsCallbackInterface.OnJump;
                 @Jump.canceled -= m_Wrapper.m_GameActionsCallbackInterface.OnJump;
+                @Sprint.started -= m_Wrapper.m_GameActionsCallbackInterface.OnSprint;
+                @Sprint.performed -= m_Wrapper.m_GameActionsCallbackInterface.OnSprint;
+                @Sprint.canceled -= m_Wrapper.m_GameActionsCallbackInterface.OnSprint;
                 @Roll.started -= m_Wrapper.m_GameActionsCallbackInterface.OnRoll;
                 @Roll.performed -= m_Wrapper.m_GameActionsCallbackInterface.OnRoll;
                 @Roll.canceled -= m_Wrapper.m_GameActionsCallbackInterface.OnRoll;
@@ -1046,6 +1072,9 @@ public partial class @PlayerActions : IInputActionCollection2, IDisposable
                 @Jump.started += instance.OnJump;
                 @Jump.performed += instance.OnJump;
                 @Jump.canceled += instance.OnJump;
+                @Sprint.started += instance.OnSprint;
+                @Sprint.performed += instance.OnSprint;
+                @Sprint.canceled += instance.OnSprint;
                 @Roll.started += instance.OnRoll;
                 @Roll.performed += instance.OnRoll;
                 @Roll.canceled += instance.OnRoll;
@@ -1217,6 +1246,7 @@ public partial class @PlayerActions : IInputActionCollection2, IDisposable
         void OnMove(InputAction.CallbackContext context);
         void OnLook(InputAction.CallbackContext context);
         void OnJump(InputAction.CallbackContext context);
+        void OnSprint(InputAction.CallbackContext context);
         void OnRoll(InputAction.CallbackContext context);
         void OnReset(InputAction.CallbackContext context);
         void OnLockTarget(InputAction.CallbackContext context);

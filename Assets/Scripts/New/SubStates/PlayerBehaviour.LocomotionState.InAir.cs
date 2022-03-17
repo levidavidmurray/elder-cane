@@ -4,23 +4,22 @@ using UnityEngine;
 
 namespace New {
     partial class PlayerBehaviour {
-
-        [SerializeField] private InAirState _InAirState;
         
         [Serializable]
         public class InAirState : LocomotionState {
 
             /************************************************************************************************************************/
             
-            [HideInInspector] public float Gravity = -9.81f;
+            public float Gravity = -48f;
             
             /************************************************************************************************************************/
             
-            [SerializeField] private LinearMixerTransition _InAirAnim;
             [SerializeField] private float _JumpUpFadeSpeed = 0.15f;
             [SerializeField] private float _FallFadeSpeed = 0.25f;
             [SerializeField] private float _AirAccelerationSpeed = 15f;
             [SerializeField] private float _Drag = 0.1f;
+            
+            [SerializeField] private LinearMixerTransition _InAirAnim;
             
             /************************************************************************************************************************/
 
@@ -41,7 +40,7 @@ namespace New {
             }
 
             public override void UpdateVelocity(ref Vector3 currentVelocity, float deltaTime) {
-                bool isFalling = currentVelocity.y <= 0f || Instance.InputHandler.JumpInputStop;
+                bool isFalling = currentVelocity.y <= 0f || !Instance.IsJumping;
                 float fallMultiplier = 2f;
 
                 if (Instance.IsMoving) {
@@ -103,7 +102,6 @@ namespace New {
                 currentVelocity *= (1f / (1f + (_Drag * deltaTime)));
 
                 if (currentVelocity.y < 0 && Instance.IsGrounded) {
-                    log($"Landed! VelocityLastTick.y is {Instance.VelocityLastTick.y}");
                     StateMachine.TrySetState(Instance._LandState);
                 }
 

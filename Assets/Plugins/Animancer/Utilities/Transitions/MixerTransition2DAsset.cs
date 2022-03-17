@@ -12,9 +12,6 @@ namespace Animancer
 {
     /// <inheritdoc/>
     /// https://kybernetik.com.au/animancer/api/Animancer/MixerTransition2DAsset
-#if !UNITY_EDITOR
-    [System.Obsolete(Validate.ProOnlyMessage)]
-#endif
     [CreateAssetMenu(menuName = Strings.MenuPrefix + "Mixer Transition/2D", order = Strings.AssetMenuOrder + 4)]
     [HelpURL(Strings.DocsURLs.APIDocumentation + "/" + nameof(MixerTransition2DAsset))]
     public class MixerTransition2DAsset : AnimancerTransitionAsset<MixerTransition2D>
@@ -30,9 +27,6 @@ namespace Animancer
     /// <inheritdoc/>
     /// https://kybernetik.com.au/animancer/api/Animancer/MixerTransition2D
     [Serializable]
-#if ! UNITY_EDITOR
-    [System.Obsolete(Validate.ProOnlyMessage)]
-#endif
     public class MixerTransition2D : MixerTransition<MixerState<Vector2>, Vector2>, MixerState.ITransition2D
     {
         /************************************************************************************************************************/
