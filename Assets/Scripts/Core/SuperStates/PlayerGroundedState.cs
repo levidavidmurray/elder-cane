@@ -59,9 +59,5 @@ namespace EC.Core.SuperStates {
                 return;
             }
         }
-
-        public override void PhysicsUpdate() {
-            base.PhysicsUpdate();
-        }
     }
 }

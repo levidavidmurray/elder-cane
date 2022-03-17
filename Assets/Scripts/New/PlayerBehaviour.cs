@@ -25,15 +25,36 @@ namespace New {
         public float OrientationSharpness = 10f;
         public float StableMovementSharpness = 15f;
         
-        private readonly StateMachine<LocomotionState> LocomotionStateMachine = new();
-        private readonly StateMachine<ActionState> ActionStateMachine = new();
+        /************************************************************************************************************************/
         
         public Vector2 MoveInput { get; private set; }
         public Vector3 MoveInputVector { get; private set; }
         public Vector3 LookInputVector { get; private set; }
         public bool IsGrounded { get; private set; }
+        public Vector3 VelocityLastTick { get; private set; }
+        
+        /************************************************************************************************************************/
+        
+        #region Finite State Machine
+        
+        private readonly StateMachine<LocomotionState> LocomotionStateMachine = new();
+        
+        [SerializeField] private IdleState _IdleState;
+        [SerializeField] private LandState _LandState;
+        [SerializeField] private JumpState _JumpState;
+        
+        private readonly StateMachine<ActionState> ActionStateMachine = new();
+        
+        #endregion
 
         /************************************************************************************************************************/
+
+        public bool IsMoving => MoveInput.magnitude > 0;
+        
+        /************************************************************************************************************************/
+        
+        #region Unity Callbacks
+        
         private void Awake() {
             AnimancerUtilities.Assert(Instance == null, $"The {nameof(PlayerBehaviour)}.{nameof(Instance)} is already assigned.");
             Instance = this;
@@ -51,46 +72,11 @@ namespace New {
             LocomotionStateMachine.CurrentState.Update();
         }
         
-        /************************************************************************************************************************/
-
-        private void UpdateBlackboard() {
-            MoveInput = InputHandler.MoveInput;
-            
-            Vector3 cameraPlanarDirection = Vector3.zero;
-            MoveInputVector = CalculateMoveInputVector(MoveInput, ref cameraPlanarDirection);
-            
-            if (OrientationMethod == OrientationMethodType.TowardsCamera) 
-                LookInputVector = cameraPlanarDirection;
-            else
-                LookInputVector = MoveInputVector.normalized;
-            
-            IsGrounded = Motor.GroundingStatus.IsStableOnGround;
-        }
-        
-        // Calculate input direction relative to camera
-        private Vector3 CalculateMoveInputVector(Vector2 moveInput, ref Vector3 cameraPlanarDirection) {
-            // Clamp input
-            Vector3 moveInputVector = Vector3.ClampMagnitude(
-                new Vector3(moveInput.x, 0f, moveInput.y),
-                1f
-            );
-            
-            // Calculate camera direction and rotation on the character plane
-            Quaternion cameraRotation = CameraTransform.rotation;
-            cameraPlanarDirection =
-                Vector3.ProjectOnPlane(cameraRotation * Vector3.forward, Motor.CharacterUp).normalized;
-            
-            if (cameraPlanarDirection.sqrMagnitude == 0f) {
-                cameraPlanarDirection = Vector3.ProjectOnPlane(cameraRotation * Vector3.up, Motor.CharacterUp).normalized;
-            }
-            
-            Quaternion cameraPlanarRotation = Quaternion.LookRotation(cameraPlanarDirection, Motor.CharacterUp);
-            
-            return cameraPlanarRotation * moveInputVector;
-        }
+        #endregion
         
         /************************************ Kinematic Character Controller ***************************************************/
 
+        #region Kinematic Character Controller
         /// <summary>
         /// (Called by KinematicCharacterMotor during its update cycle)
         /// This is called before the character begins its movement update
@@ -127,6 +113,7 @@ namespace New {
         /// </summary>
         public void UpdateVelocity(ref Vector3 currentVelocity, float deltaTime) {
             LocomotionStateMachine.CurrentState.UpdateVelocity(ref currentVelocity, deltaTime);
+            VelocityLastTick = currentVelocity;
         }
 
         /// <summary>
@@ -163,6 +150,48 @@ namespace New {
 
         public void OnDiscreteCollisionDetected(Collider hitCollider) { }
         
+        #endregion
+        
         /************************************************************************************************************************/
+        
+        #region Helper Functions
+        
+        private void UpdateBlackboard() {
+            MoveInput = InputHandler.MoveInput;
+            
+            Vector3 cameraPlanarDirection = Vector3.zero;
+            MoveInputVector = CalculateMoveInputVector(MoveInput, ref cameraPlanarDirection);
+            
+            if (OrientationMethod == OrientationMethodType.TowardsCamera) 
+                LookInputVector = cameraPlanarDirection;
+            else
+                LookInputVector = MoveInputVector.normalized;
+            
+            IsGrounded = Motor.GroundingStatus.IsStableOnGround;
+        }
+        
+        // Calculate input direction relative to camera
+        private Vector3 CalculateMoveInputVector(Vector2 moveInput, ref Vector3 cameraPlanarDirection) {
+            // Clamp input
+            Vector3 moveInputVector = Vector3.ClampMagnitude(new Vector3(moveInput.x, 0f, moveInput.y), 1f);
+            
+            // Calculate camera direction and rotation on the character plane
+            Quaternion cameraRotation = CameraTransform.rotation;
+            cameraPlanarDirection =
+                Vector3.ProjectOnPlane(cameraRotation * Vector3.forward, Motor.CharacterUp).normalized;
+            
+            if (cameraPlanarDirection.sqrMagnitude == 0f) {
+                cameraPlanarDirection = Vector3.ProjectOnPlane(cameraRotation * Vector3.up, Motor.CharacterUp).normalized;
+            }
+            
+            Quaternion cameraPlanarRotation = Quaternion.LookRotation(cameraPlanarDirection, Motor.CharacterUp);
+            
+            return cameraPlanarRotation * moveInputVector;
+        }
+        
+        #endregion
+        
+        /************************************************************************************************************************/
+        
     }
 }

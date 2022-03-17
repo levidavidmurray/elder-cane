@@ -3,11 +3,9 @@ using UnityEngine;
 
 namespace New {
     partial class PlayerBehaviour {
-
-        [SerializeField] private JumpState _JumpState;
         
         [Serializable]
-        public class JumpState : LocomotionState {
+        public class JumpState : GroundedState {
             
             [SerializeField] private float _FadeSpeed = 0.25f;
             [SerializeField] private AnimationClip _JumpClip;
@@ -15,9 +13,15 @@ namespace New {
             [SerializeField] private float _ForwardSpeedScale = 0f;
             [SerializeField] private float _MaxJumpTime;
             [SerializeField] private float _MaxJumpHeight;
+            
+            /************************************************************************************************************************/
 
             private int _JumpsRemaining;
             private float _InitialJumpVelocity;
+            
+            /************************************************************************************************************************/
+            
+            public override bool CanEnterState => _JumpsRemaining > 0;
             
             /************************************************************************************************************************/
 
@@ -41,10 +45,8 @@ namespace New {
                 currentVelocity.y = _InitialJumpVelocity;
                 currentVelocity += (Instance.MoveInputVector * _ForwardSpeedScale);
 
-                Instance.LocomotionStateMachine.TrySetState(Instance._InAirState);
+                StateMachine.TrySetState(Instance._InAirState);
             }
-
-            public override bool CanEnterState => _JumpsRemaining > 0;
 
             /************************************************************************************************************************/
             

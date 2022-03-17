@@ -3,28 +3,29 @@ using UnityEngine;
 
 namespace New {
     partial class PlayerBehaviour {
-
-        [SerializeField] private IdleState _IdleState;
         
         [Serializable]
-        public class IdleState : LocomotionState {
-            
-            [SerializeField] private float _FadeSpeed = 0.25f;
-            [SerializeField] private AnimationClip _IdleClip;
+        public abstract class GroundedState : LocomotionState {
             
             /************************************************************************************************************************/
 
             public override void OnEnterState() {
                 base.OnEnterState();
-                Instance.Animancer.Play(_IdleClip, _FadeSpeed);
+                
+                Instance._JumpState.ResetJumps();
+                Instance.InputHandler.UseJumpInput();
             }
 
             public override void Update() {
                 base.Update();
 
-                if (Instance.MoveInput.magnitude > 0f) {
-                    // Change to MoveState
-                    Instance.LocomotionStateMachine.TrySetState(Instance._MoveState);
+                if (!Instance.IsGrounded) {
+                    StateMachine.TrySetState(Instance._InAirState);
+                    return;
+                }
+
+                if (Instance.InputHandler.JumpInput) {
+                    StateMachine.TrySetState(Instance._JumpState);
                 }
             }
             

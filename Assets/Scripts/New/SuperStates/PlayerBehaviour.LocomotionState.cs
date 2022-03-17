@@ -1,4 +1,5 @@
 ﻿using System;
+using Animancer.FSM;
 using KinematicCharacterController;
 using UnityEngine;
 
@@ -10,33 +11,20 @@ namespace New {
 
             [SerializeField] protected float _MoveSpeed;
             
+            /************************************************************************************************************************/
+            
             protected KinematicCharacterMotor Motor;
+            protected StateMachine<LocomotionState> StateMachine;
             
             /************************************************************************************************************************/
 
             public override void OnEnterState() {
                 Motor = Instance.Motor;
-
-                if (Instance.IsGrounded) {
-                    Instance._JumpState.ResetJumps();
-                    Instance.InputHandler.UseJumpInput();
-                }
+                StateMachine = Instance.LocomotionStateMachine;
             }
 
-            public override void Update() {
-                base.Update();
-
-                if (!Instance.IsGrounded) return;
-
-                var jumpInput = Instance.InputHandler.JumpInput;
-
-                if (jumpInput && Instance._JumpState.CanEnterState) {
-                    Instance.LocomotionStateMachine.TrySetState(Instance._JumpState);
-                }
-            }
-
+            // _MoveSpeed is set independently for each LocomotionState (Idle, Move, Jump, etc.)
             public virtual void UpdateVelocity(ref Vector3 currentVelocity, float deltaTime) {
-                
                 float currentVelocityMagnitude = currentVelocity.magnitude;
     
                 Vector3 effectiveGroundNormal = Motor.GroundingStatus.GroundNormal;

@@ -44,7 +44,9 @@ namespace New {
                 bool isFalling = currentVelocity.y <= 0f || Instance.InputHandler.JumpInputStop;
                 float fallMultiplier = 2f;
 
-                if (Instance.MoveInputVector.sqrMagnitude > 0f) {
+                if (Instance.IsMoving) {
+                    
+                    #region In-Air Planar Velocity
                     var addedVelocity = Instance.MoveInputVector * _AirAccelerationSpeed * deltaTime;
 
                     Vector3 currentVelocityOnInputsPlane =
@@ -75,11 +77,13 @@ namespace New {
                                 Vector3.ProjectOnPlane(addedVelocity, perpenticularObstructionNormal);
                         }
                     }
+                    #endregion
 
                     // Apply added velocity
                     currentVelocity += addedVelocity;
                 }
 
+                #region Velocity Verlet (Gravity)
                 // Velocity Verlet Gravity
                 float previousYVelocity = currentVelocity.y;
                 float newYVelocity;
@@ -91,15 +95,18 @@ namespace New {
                 }
                 
                 float nextYVelocity = (previousYVelocity + newYVelocity) * .5f;
+                #endregion
+                
                 currentVelocity.y = nextYVelocity;
 
                 // Drag
                 currentVelocity *= (1f / (1f + (_Drag * deltaTime)));
 
                 if (currentVelocity.y < 0 && Instance.IsGrounded) {
-                    Instance.LocomotionStateMachine.TrySetState(Instance._LandState);
+                    log($"Landed! VelocityLastTick.y is {Instance.VelocityLastTick.y}");
+                    StateMachine.TrySetState(Instance._LandState);
                 }
-                
+
             }
             
             /************************************************************************************************************************/

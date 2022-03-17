@@ -8,7 +8,7 @@ namespace New {
         [SerializeField] private MoveState _MoveState;
         
         [Serializable]
-        public class MoveState : LocomotionState {
+        public class MoveState : GroundedState {
             
             [SerializeField] private LinearMixerTransition _MoveAnim;
             
@@ -27,7 +27,7 @@ namespace New {
                 _MoveAnim.State.Parameter = planarVelocity.magnitude / _MoveSpeed;
 
                 if (Instance.MoveInput.magnitude == 0) {
-                    Instance.LocomotionStateMachine.TrySetState(Instance._IdleState);
+                    StateMachine.TrySetState(Instance._IdleState);
                 }
             }
             
