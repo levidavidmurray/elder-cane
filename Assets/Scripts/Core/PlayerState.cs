@@ -1,4 +1,5 @@
-﻿using KinematicCharacterController;
+﻿using System;
+using KinematicCharacterController;
 using UnityEngine;
 
 namespace EC.Core {

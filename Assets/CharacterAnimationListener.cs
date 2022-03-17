@@ -11,4 +11,9 @@ public class CharacterAnimationListener : MonoBehaviour {
     public void OnRollComplete() {
         Controller.OnRollComplete?.Invoke();
     }
+    
+    public void OnAttackComplete() {
+        Controller.OnAttackComplete?.Invoke();
+    }
+    
 }

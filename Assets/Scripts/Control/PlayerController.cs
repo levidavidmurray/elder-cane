@@ -34,7 +34,7 @@ namespace EC.Control {
             // Tell camera to follow transform
             // CharacterCamera.SetFollowTransform(Character.CameraFollowPoint);
 
-            Character.StateMachine.OnStateChange += OnPlayerStateChange;
+            Character.ActionStateMachine.OnStateChange += OnPlayerStateChange;
 
             Vector3 charStartPos = Character.transform.position;
             
@@ -42,6 +42,7 @@ namespace EC.Control {
                 if (!context.performed) return;
                 Character.Motor.SetPosition(charStartPos);
                 Character.ResetVelocity();
+                Character.ActionStateMachine.ChangeState(Character.IdleState);
             };
 
             InputHandler.OnLockTargetCb += context => {

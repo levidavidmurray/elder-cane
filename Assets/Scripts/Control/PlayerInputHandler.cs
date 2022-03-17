@@ -4,6 +4,8 @@ using UnityEngine.InputSystem;
 
 namespace EC.Control {
     public class PlayerInputHandler : MonoBehaviour {
+
+        public static PlayerInputHandler Instance;
         
         #region Custom Callbacks
 
@@ -18,17 +20,46 @@ namespace EC.Control {
         public bool JumpInputStop { get; private set; }
         public bool RollInput { get; private set; }
         public bool RollInputStop { get; private set; }
+        public bool AttackLightInput { get; private set; }
+        public bool AttackLightInputStop { get; private set; }
+        public bool AttackHeavyInput { get; private set; }
 
         [SerializeField] private float inputHoldTime = 0.2f;
 
         private float jumpInputStartTime;
         private float rollInputStartTime;
+        private float attackInputStartTime;
+
+        private PlayerActions _PlayerActions;
+        public PlayerActions.GameActions GameActions { get; private set; }
+
+        private void Awake() {
+            if (Instance != null) {
+                Instance = this;
+            }
+            
+            InitializeInputActions();
+        }
 
         private void Update() {
+            CheckAttackInputHoldTime();
             CheckJumpInputHoldTime();
             CheckRollInputHoldTime();
+        }
+
+        private void InitializeInputActions() {
+            _PlayerActions = new PlayerActions();
+            GameActions = _PlayerActions.Game;
             
-            Debug.Log($"JumpInput: {JumpInput}");
+            EnableAll(GameActions.Move, OnMove);
+            EnableAll(GameActions.Jump, OnJump);
+        }
+
+        private void EnableAll(InputAction action, Action<InputAction.CallbackContext> actionCb) {
+            action.Enable();
+            action.started += actionCb;
+            action.performed += actionCb;
+            action.canceled += actionCb;
         }
 
         public void OnMove(InputAction.CallbackContext context) {
@@ -40,15 +71,19 @@ namespace EC.Control {
         }
 
         public void OnJump(InputAction.CallbackContext context) {
-            if (context.started) {
+            if (context.started)
                 JumpInput = true;
-                JumpInputStop = false;
-                jumpInputStartTime = Time.time;
-            }
-
-            if (context.canceled) {
-                JumpInputStop = true;
-            }
+            if (context.canceled)
+                JumpInput = false;
+            // if (context.started) {
+            //     JumpInput = true;
+            //     JumpInputStop = false;
+            //     jumpInputStartTime = Time.time;
+            // }
+            //
+            // if (context.canceled) {
+            //     JumpInputStop = true;
+            // }
         }
 
         public void OnRoll(InputAction.CallbackContext context) {
@@ -63,6 +98,19 @@ namespace EC.Control {
             }
         }
 
+        public void OnAttackLight(InputAction.CallbackContext context) {
+            if (context.started) {
+                AttackLightInput = true;
+                AttackLightInputStop = false;
+                attackInputStartTime = Time.time;
+                return;
+            }
+
+            if (context.performed || context.canceled) {
+                AttackLightInputStop = true;
+            }
+        }
+
         public void OnReset(InputAction.CallbackContext context) {
             OnResetCb?.Invoke(context);
         }
@@ -72,8 +120,15 @@ namespace EC.Control {
         }
 
         public void UseJumpInput() => JumpInput = false;
-        
         public void UseRollInput() => RollInput = false;
+        public void UseAttackLightInput() => AttackLightInput = false;
+
+        private void CheckAttackInputHoldTime() {
+            if (Time.time - attackInputStartTime >= inputHoldTime) {
+                AttackLightInput = false;
+                AttackHeavyInput = false;
+            }
+        }
 
         private void CheckJumpInputHoldTime() {
             // if (Time.time - jumpInputStartTime >= inputHoldTime) {

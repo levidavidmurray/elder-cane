@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace EC.Core.SuperStates {
     public class PlayerGroundedState : PlayerState {
@@ -9,6 +10,7 @@ namespace EC.Core.SuperStates {
 
         private bool JumpInput;
         private bool RollInput;
+        private bool AttackLightInput;
 
         private bool isGrounded;
 
@@ -39,6 +41,7 @@ namespace EC.Core.SuperStates {
             MoveInput = Controller.InputHandler.MoveInput;
             JumpInput = Controller.InputHandler.JumpInput;
             RollInput = Controller.InputHandler.RollInput;
+            AttackLightInput = Controller.InputHandler.AttackLightInput;
             
 
             if (JumpInput && Controller.JumpState.CanJump()) {
@@ -48,6 +51,11 @@ namespace EC.Core.SuperStates {
 
             if (RollInput && Controller.RollState.CanRoll()) {
                 stateMachine.ChangeState(Controller.RollState);
+                return;
+            }
+
+            if (AttackLightInput && Controller.AttackState.AbilityIsAvailable()) {
+                stateMachine.ChangeState(Controller.AttackState);
                 return;
             }
         }

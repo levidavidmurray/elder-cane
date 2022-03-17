@@ -2,7 +2,7 @@
     "name": "PlayerActions",
     "maps": [
         {
-            "name": "Player",
+            "name": "Game",
             "id": "e4702be5-d2c0-4b2c-8dcd-44402cbddf27",
             "actions": [
                 {
@@ -54,6 +54,15 @@
                     "name": "LockTarget",
                     "type": "Button",
                     "id": "597749e1-978e-4bc9-9282-a83666386b96",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "AttackLight",
+                    "type": "Button",
+                    "id": "741f60b9-6e9d-42e0-9c0f-b96012a96a7c",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -267,6 +276,28 @@
                     "processors": "",
                     "groups": "Gamepad",
                     "action": "LockTarget",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "ebad90cf-dd1f-4530-9059-c45ada29a108",
+                    "path": "<Gamepad>/rightShoulder",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "AttackLight",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "151bae6e-f2ed-441c-89b2-090ef49b1162",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "AttackLight",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

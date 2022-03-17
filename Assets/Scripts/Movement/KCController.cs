@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Animancer;
 using EC.Control;
 using EC.Core.SubStates;
 using KinematicCharacterController;
@@ -44,23 +45,25 @@ namespace EC.Core {
         public readonly int AnimProp_MoveMagnitude = Animator.StringToHash("MoveMagnitude");
         public readonly int AnimProp_Forward = Animator.StringToHash("Forward");
         public readonly int AnimProp_Sideways = Animator.StringToHash("Sideways");
+        public readonly int AnimProp_AttackLight = Animator.StringToHash("AttackLight");
+        public readonly int AnimProp_AttackHeavy = Animator.StringToHash("AttackHeavy");
         
         #endregion
         
         public KinematicCharacterMotor Motor;
+        
+        [SerializeField]
+        private AnimancerComponent _Animancer;
+        public AnimancerComponent Animancer => _Animancer;
 
         public List<Collider> IgnoredColliders = new List<Collider>();
         public PlayerInputHandler InputHandler;
         public Animator Anim;
         
-        public Transform MeshRoot;
-        public Transform CameraFollowPoint;
-        public Transform LockedTarget;
-        public AnimationClip RollAnimClip;
-        public AnimationClip BackflipAnimClip;
         public Vector3 MoveInputVector { get; private set; }
 
         public Action OnRollComplete;
+        public Action OnAttackComplete;
         
         #region Computed Properties
         
@@ -72,26 +75,24 @@ namespace EC.Core {
 
         #region States
 
-        public PlayerStateMachine StateMachine { get; private set; }
+        public PlayerStateMachine ActionStateMachine { get; private set; }
+        public PlayerStateMachine MoveStateMachine { get; private set; }
         
+        public PlayerEmptyState EmptyState { get; private set; }
         public PlayerIdleState IdleState { get; private set; }
         public PlayerMoveState MoveState { get; private set; }
         public PlayerJumpState JumpState { get; private set; }
         public PlayerInAirState InAirState { get; private set; }
         public PlayerLandState LandState { get; private set; }
         public PlayerRollState RollState { get; private set; }
+        public PlayerAttackState AttackState { get; private set; }
 
         [SerializeField] private KCControllerData controllerData;
         #endregion
 
-        private bool _shouldResetVelocity = false;
-
+        private bool _shouldResetVelocity;
         private Transform _lockTarget;
-        private Collider[] _probedColliders = new Collider[8];
         private Vector3 _lookInputVector;
-        private bool _shouldBeCrouching;
-        private bool _isCrouching;
-        private bool _isRolling;
         private Vector3 _internalVelocityAdd = Vector3.zero;
         
 
@@ -101,22 +102,30 @@ namespace EC.Core {
             Motor.CharacterController = this;
             
             // States
-            StateMachine = new PlayerStateMachine();
+            ActionStateMachine = new PlayerStateMachine();
+            MoveStateMachine = new PlayerStateMachine();
             
-            IdleState = new PlayerIdleState(this, StateMachine, controllerData);
-            MoveState = new PlayerMoveState(this, StateMachine, controllerData);
-            JumpState = new PlayerJumpState(this, StateMachine, controllerData);
-            LandState = new PlayerLandState(this, StateMachine, controllerData);
-            InAirState = new PlayerInAirState(this, StateMachine, controllerData);
-            RollState = new PlayerRollState(this, StateMachine, controllerData);
+            // Move States
+            IdleState = new PlayerIdleState(this, MoveStateMachine, controllerData);
+            MoveState = new PlayerMoveState(this, MoveStateMachine, controllerData);
+            JumpState = new PlayerJumpState(this, MoveStateMachine, controllerData);
+            InAirState = new PlayerInAirState(this, MoveStateMachine, controllerData);
+            LandState = new PlayerLandState(this, MoveStateMachine, controllerData);
+            
+            // Action States
+            EmptyState = new PlayerEmptyState(this, ActionStateMachine, controllerData);
+            RollState = new PlayerRollState(this, ActionStateMachine, controllerData);
+            AttackState = new PlayerAttackState(this, ActionStateMachine, controllerData);
         }
 
         private void Start() {
-            StateMachine.Initialize(IdleState);
+            ActionStateMachine.Initialize(EmptyState);
+            MoveStateMachine.Initialize(IdleState);
         }
 
         private void Update() {
-            StateMachine.CurrentState.LogicUpdate();
+            ActionStateMachine.CurrentState.LogicUpdate();
+            MoveStateMachine.CurrentState.LogicUpdate();
             
             Anim.SetFloat(AnimProp_MoveMagnitude, InputHandler.MoveInput.magnitude);
 
@@ -133,7 +142,8 @@ namespace EC.Core {
         }
 
         private void FixedUpdate() {
-            StateMachine.CurrentState.PhysicsUpdate();
+            ActionStateMachine.CurrentState.PhysicsUpdate();
+            MoveStateMachine.CurrentState.PhysicsUpdate();
         }
         
         #endregion
@@ -259,7 +269,8 @@ namespace EC.Core {
         public void UpdateVelocity(ref Vector3 currentVelocity, float deltaTime) {
             // Input based movement when grounded
             // Ground movement
-            StateMachine.CurrentState.UpdateVelocity(ref currentVelocity, deltaTime);
+            ActionStateMachine.CurrentState.UpdateVelocity(ref currentVelocity, deltaTime);
+            MoveStateMachine.CurrentState.UpdateVelocity(ref currentVelocity, deltaTime);
         
             // Take into account additive velocity
             if (_internalVelocityAdd.sqrMagnitude > 0f) {
@@ -285,29 +296,6 @@ namespace EC.Core {
         /// This is called after the character has finished its movement update
         /// </summary>
         public void AfterCharacterUpdate(float deltaTime) {
-            
-            bool shouldUncrounch = _isCrouching && !_shouldBeCrouching;
-
-            // Handle uncrouching
-            if (shouldUncrounch) {
-                // Do an overlap test with the character's standing height to see if there are any obstructions
-                Motor.SetCapsuleDimensions(0.5f, 2f, 1f);
-                if (Motor.CharacterOverlap(
-                        Motor.TransientPosition,
-                        Motor.TransientRotation,
-                        _probedColliders,
-                        Motor.CollidableLayers,
-                        QueryTriggerInteraction.Ignore) > 0) {
-                    // If obstructions, just stick to crouching dimensions
-                    Motor.SetCapsuleDimensions(0.5f, controllerData.CrouchedCapsuleHeight, controllerData.CrouchedCapsuleHeight * 0.5f);
-                }
-                else {
-                    // If no obstructions, uncrouch
-                    MeshRoot.localScale = new Vector3(1f, 1f, 1f);
-                    _isCrouching = false;
-                }
-            }
-
         }
 
         public void PostGroundingUpdate(float deltaTime) {
@@ -353,11 +341,11 @@ namespace EC.Core {
         }
 
         protected void OnLanded() {
-            StateMachine.ChangeState(LandState);
+            MoveStateMachine.ChangeState(LandState);
         }
 
         protected void OnLeaveStableGround() {
-            StateMachine.ChangeState(InAirState);
+            MoveStateMachine.ChangeState(InAirState);
         }
 
         public void OnDiscreteCollisionDetected(Collider hitCollider) {
