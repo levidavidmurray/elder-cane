@@ -1,5 +1,6 @@
 ﻿using System;
 using Animancer;
+using DarkTonic.MasterAudio;
 using UnityEngine;
 
 namespace New {
@@ -33,6 +34,8 @@ namespace New {
                 if (!_IsInitialized) {
                     Initialize();
                 }
+                
+                MasterAudio.PlaySound3DAtTransformAndForget("Land", Instance.transform);
                 
                 _IsHardLanding = Instance.VelocityLastTick.y <= _HardLandVelocityThreshold;
                 

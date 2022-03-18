@@ -858,31 +858,28 @@ namespace DarkTonic.MasterAudio.EditorScripts
                 if (indexToDelete.HasValue)
                 {
                     var groupToDelete = _groups[indexToDelete.Value];
-#if UNITY_2018_3_OR_NEWER
-                var wasDestroyed = false;
 
-                if (PrefabUtility.IsPartOfPrefabInstance(_creator)) {
-                    var prefabPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(_creator);
-                    GameObject prefabRoot = PrefabUtility.LoadPrefabContents(prefabPath);
+                    var wasDestroyed = false;
 
-                    var deadTrans = prefabRoot.transform.Find(groupToDelete.name);
+                    if (PrefabUtility.IsPartOfPrefabInstance(_creator)) {
+                        var prefabPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(_creator);
+                        GameObject prefabRoot = PrefabUtility.LoadPrefabContents(prefabPath);
 
-                    if (deadTrans != null) {
-                        // Destroy child objects or components on rootGO
-                        DestroyImmediate(deadTrans.gameObject); // can't undo
-                        wasDestroyed = true;
+                        var deadTrans = prefabRoot.transform.Find(groupToDelete.name);
+
+                        if (deadTrans != null) {
+                            // Destroy child objects or components on rootGO
+                            DestroyImmediate(deadTrans.gameObject); // can't undo
+                            wasDestroyed = true;
+                        } 
+
+                        PrefabUtility.SaveAsPrefabAsset(prefabRoot, prefabPath);
+                        PrefabUtility.UnloadPrefabContents(prefabRoot);
                     } 
-
-                    PrefabUtility.SaveAsPrefabAsset(prefabRoot, prefabPath);
-                    PrefabUtility.UnloadPrefabContents(prefabRoot);
-                } 
                 
-                if (!wasDestroyed) { 
-                    AudioUndoHelper.DestroyForUndo(groupToDelete.gameObject);
-                }
-#else
-                    AudioUndoHelper.DestroyForUndo(groupToDelete.gameObject);
-#endif
+                    if (!wasDestroyed) { 
+                        AudioUndoHelper.DestroyForUndo(groupToDelete.gameObject);
+                    }
                 }
 
                 EditorGUILayout.Separator();
@@ -1582,7 +1579,7 @@ namespace DarkTonic.MasterAudio.EditorScripts
                                 aList.fadeOutLastSong = newFadeOut;
                             }
 
-                            var newTransType = (MasterAudio.SongFadeInPosition)EditorGUILayout.EnumPopup("Song Transition Type", aList.songTransitionType);
+                            var newTransType = (MasterAudio.SongFadeInPosition)EditorGUILayout.EnumPopup(new GUIContent("Song Transition Type", "If you choose 'New Clip From Beginning', then 'Begin Song Time Mode' for each Song will be used."), aList.songTransitionType);
                             if (newTransType != aList.songTransitionType)
                             {
                                 AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _creator, "change Song Transition Type");
@@ -2259,12 +2256,19 @@ namespace DarkTonic.MasterAudio.EditorScripts
                                         }
                                     }
 
-                                    if (aList.songTransitionType == MasterAudio.SongFadeInPosition.NewClipFromBeginning)
+                                    var useLastKnownPosition = aList.songTransitionType == MasterAudio.SongFadeInPosition.NewClipFromLastKnownPosition;
+
+                                    if (aList.songTransitionType == MasterAudio.SongFadeInPosition.NewClipFromBeginning || useLastKnownPosition)
                                     {
-                                        var startTimeMode = (MasterAudio.CustomSongStartTimeMode)EditorGUILayout.EnumPopup("Song Start Time Mode", aSong.songStartTimeMode);
+                                        if (useLastKnownPosition && aSong.songStartTimeMode != MasterAudio.CustomSongStartTimeMode.Beginning)
+                                        {
+                                            DTGUIHelper.ShowLargeBarAlert("In this Song Transition Type, the Begin Song Time Mode will only be used the first time a song is played.");
+                                        }
+
+                                        var startTimeMode = (MasterAudio.CustomSongStartTimeMode)EditorGUILayout.EnumPopup("Begin Song Time Mode", aSong.songStartTimeMode);
                                         if (startTimeMode != aSong.songStartTimeMode)
                                         {
-                                            AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _creator, "change Song Start Time Mode");
+                                            AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _creator, "change Begin Song Time Mode");
                                             aSong.songStartTimeMode = startTimeMode;
                                         }
 

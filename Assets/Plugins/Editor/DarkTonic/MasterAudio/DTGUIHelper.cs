@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
 using UnityEditor;
-#if UNITY_2018_3_OR_NEWER
 using UnityEditor.SceneManagement;
-#endif
 using UnityEngine;
 #if ADDRESSABLES_ENABLED
-using UnityEngine.AddressableAssets;
+    using UnityEngine.AddressableAssets;
 #endif
 using Object = UnityEngine.Object;
 
@@ -1158,11 +1156,7 @@ namespace DarkTonic.MasterAudio.EditorScripts
             GUI.backgroundColor = OuterGroupBoxColor;
             GUILayout.BeginHorizontal();
 
-#if UNITY_2017_1_OR_NEWER
-        EditorGUILayout.BeginHorizontal("TextArea", GUILayout.MinHeight(10f));
-#else
-            EditorGUILayout.BeginHorizontal("AS TextArea", GUILayout.MinHeight(10f));
-#endif
+            EditorGUILayout.BeginHorizontal("TextArea", GUILayout.MinHeight(10f));
 
             GUILayout.BeginVertical();
             GUI.backgroundColor = Color.white;
@@ -1380,7 +1374,7 @@ namespace DarkTonic.MasterAudio.EditorScripts
             }
             else
             {
-                var grp = MasterAudio.FindGroupTransform(sType);
+                var grp = MasterAudio.FindGroupTransform(sType); 
                 if (grp == null)
                 {
                     return;
@@ -1398,6 +1392,7 @@ namespace DarkTonic.MasterAudio.EditorScripts
 
                     if (previewer != null)
                     {
+                        previewer.Play();
                         MasterAudioInspector.StopPreviewer();
                         previewer.pitch = randPitch;
                     }
@@ -1416,8 +1411,8 @@ namespace DarkTonic.MasterAudio.EditorScripts
                         case MasterAudio.AudioLocation.Clip:
                             if (previewer != null)
                             {
-                                previewer.PlayOneShot(rndVar.VarAudio.clip, calcVolume);
-                            }
+                                rndVar.VarAudio.PlayOneShot(rndVar.VarAudio.clip, 1);
+                            } 
                             break;
 #if ADDRESSABLES_ENABLED
                     case MasterAudio.AudioLocation.Addressable:
@@ -1836,7 +1831,6 @@ namespace DarkTonic.MasterAudio.EditorScripts
             ShowRedError("Create your own prefab of this so it doesn't get overwritten the next time you update Master Audio. Do this now to be able to use this Inspector.");
         }
 
-#if UNITY_2018_3_OR_NEWER
         public static bool IsLinkedToDarkTonicPrefabFolder(Object gObject)
         {
             var path = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(gObject);
@@ -1851,59 +1845,36 @@ namespace DarkTonic.MasterAudio.EditorScripts
         public static bool IsPrefabInProjectView(GameObject gObject) {
             return gObject.scene.name == null;
         }
-#else
-        public static bool IsLinkedToDarkTonicPrefabFolder(Object gObject) {
-            return false;
-        }
-        public static bool IsInPrefabMode(GameObject gameObject)
-        {
-            return false;
-        }
 
-        public static bool IsPrefabInProjectView(Object gObject)
-        {
-            return GetPrefabType(gObject) == PrefabType.Prefab;
-        }
-#endif
-
-#if UNITY_2018_2_OR_NEWER
         public static GameObject DuplicateGameObject(GameObject gameObj, string baseName, int? optionalCountSuffix) {
-        var prefabRoot = PrefabUtility.GetCorrespondingObjectFromSource(gameObj);
+            var prefabRoot = PrefabUtility.GetCorrespondingObjectFromSource(gameObj);
 
-        GameObject dupe;
+            GameObject dupe;
 
-        if (prefabRoot != null) {
-            dupe = (GameObject)PrefabUtility.InstantiatePrefab(prefabRoot);
-        } else {
-            // ReSharper disable RedundantCast
-            // ReSharper disable once AccessToStaticMemberViaDerivedType
-            dupe = (GameObject)GameObject.Instantiate(gameObj);
-            // ReSharper restore RedundantCast
+            if (prefabRoot != null) {
+                dupe = (GameObject)PrefabUtility.InstantiatePrefab(prefabRoot);
+            } else {
+                // ReSharper disable RedundantCast
+                // ReSharper disable once AccessToStaticMemberViaDerivedType
+                dupe = (GameObject)GameObject.Instantiate(gameObj);
+                // ReSharper restore RedundantCast
+            }
+
+            if (dupe == null) {
+                return null;
+            }
+            var newName = baseName;
+            if (optionalCountSuffix.HasValue) {
+                newName += optionalCountSuffix.Value;
+            }
+            dupe.name = newName;
+
+            return dupe;
         }
 
-        if (dupe == null) {
-            return null;
+        private static PrefabAssetType GetPrefabType(Object gObject) {
+            return PrefabUtility.GetPrefabAssetType(gObject);
         }
-        var newName = baseName;
-        if (optionalCountSuffix.HasValue) {
-            newName += optionalCountSuffix.Value;
-        }
-        dupe.name = newName;
-
-        return dupe;
-    }
-#endif
-
-#if UNITY_2018_3_OR_NEWER
-    private static PrefabAssetType GetPrefabType(Object gObject) {
-        return PrefabUtility.GetPrefabAssetType(gObject);
-    }
-#else
-        private static PrefabType GetPrefabType(Object gObject)
-        {
-            return PrefabUtility.GetPrefabType(gObject);
-        }
-#endif
 
         private static float GetPositiveUsablePitch(AudioSource source)
         {

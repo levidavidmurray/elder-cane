@@ -297,12 +297,12 @@ namespace DarkTonic.MasterAudio.EditorScripts
             }
 
             EditorGUILayout.BeginHorizontal();
-            var newWeight = EditorGUILayout.IntSlider("Voices (Weight)", _variation.weight, 0, 100);
+            var newWeight = EditorGUILayout.IntSlider("Voices / Weight", _variation.weight, 0, 100);
             DTGUIHelper.AddHelpIconNoStyle("http://www.dtdevtools.com/docs/masteraudio/SoundGroupVariations.htm#Voices");
             EditorGUILayout.EndHorizontal();
             if (newWeight != _variation.weight)
             {
-                AudioUndoHelper.RecordObjectPropertyForUndo(ref isDirty, _variation, "change Voices (Weight)");
+                AudioUndoHelper.RecordObjectPropertyForUndo(ref isDirty, _variation, "change Voices / Weight");
                 _variation.weight = newWeight;
             }
 

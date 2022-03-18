@@ -9,6 +9,7 @@ namespace DarkTonic.MasterAudio {
         // ReSharper disable InconsistentNaming
         public GameObject variationTemplate;
 
+        public bool useClipAgePriority = false;
         public bool alwaysHighestPriority = false;
         public float groupMasterVolume = 1f;
         public int retriggerPercentage = 50;

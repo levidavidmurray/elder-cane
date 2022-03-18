@@ -62,15 +62,8 @@ namespace DarkTonic.MasterAudio.EditorScripts
 #region Change Persisting Code
         public void OnEnable()
         {
-#if UNITY_2017_2_OR_NEWER
-        EditorApplication.playModeStateChanged -= PlayModeStateChanged;
-        EditorApplication.playModeStateChanged += PlayModeStateChanged;
-#else
-            // subtract delegate so we don't get more than one.
-            // ReSharper disable once DelegateSubtraction
-            EditorApplication.playmodeStateChanged -= PlaymodeStateChanged;
-            EditorApplication.playmodeStateChanged += PlaymodeStateChanged;
-#endif
+            EditorApplication.playModeStateChanged -= PlayModeStateChanged;
+            EditorApplication.playModeStateChanged += PlayModeStateChanged;
         }
 
         private static void AddAllChangePersistingObjects()
@@ -109,15 +102,13 @@ namespace DarkTonic.MasterAudio.EditorScripts
             context.SetContext(trans);
         }
 
-#if UNITY_2017_2_OR_NEWER
-    /// <summary>
-    /// This is the new one for Unity 2017. Old one deprecated
-    /// </summary>
-    /// <param name="state"></param>
-    private static void PlayModeStateChanged(PlayModeStateChange state) {
-        PlaymodeStateChanged();
-    }
-#endif
+        /// <summary>
+        /// This is the new one for Unity 2017. Old one deprecated
+        /// </summary>
+        /// <param name="state"></param>
+        private static void PlayModeStateChanged(PlayModeStateChange state) {
+            PlaymodeStateChanged();
+        }
 
         private static void PlaymodeStateChanged()
         {
@@ -1303,121 +1294,117 @@ namespace DarkTonic.MasterAudio.EditorScripts
                 }
                 EditorGUILayout.EndVertical();
 
-                if (SpatializerHelper.SpatializerOptionExists)
+                EditorGUI.indentLevel = 1;
+                DTGUIHelper.StartGroupHeader();
+                EditorGUILayout.BeginHorizontal();
+                var labelName = "VR Settings";
+
+                if (!string.IsNullOrEmpty(SpatializerHelper.SelectedSpatializer))
                 {
-                    EditorGUI.indentLevel = 1;
-                    DTGUIHelper.StartGroupHeader();
-                    EditorGUILayout.BeginHorizontal();
-                    var labelName = "VR Settings";
-
-                    if (!string.IsNullOrEmpty(SpatializerHelper.SelectedSpatializer))
-                    {
-                        labelName += " (" + SpatializerHelper.SelectedSpatializer + ")";
-                    }
-                    else
-                    {
-                        labelName += " (No Spatializer selected)";
-                    }
-
-                    var newVR = DTGUIHelper.Foldout(_sounds.vrSettingsExpanded, labelName);
-                    if (newVR != _sounds.vrSettingsExpanded)
-                    {
-                        AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "toggle VR Settings");
-                        _sounds.vrSettingsExpanded = newVR;
-                    }
-                    EditorGUILayout.EndHorizontal();
-                    EditorGUILayout.EndVertical();
-
-                    if (_sounds.vrSettingsExpanded)
-                    {
-                        EditorGUI.indentLevel = 0;
-                        if (!SpatializerHelper.IsSupportedSpatializer)
-                        {
-                            DTGUIHelper.ShowLargeBarAlert("You must select a supported Spatializer Plugin on the Audio Settings dialog before settings here will have any effect. Oculus and Resonance Audio are currently supported.");
-                        }
-
-                        var newSpatialize = EditorGUILayout.Toggle(new GUIContent("Use Spatializer", "Turn this on if you have selected OculusSpatializer for the Spatializer Plugin on the AudioManager settings screen. All Sound Group Audio Sources will automatically turn on 'Spatialize'."), _sounds.useSpatializer);
-                        if (newSpatialize != _sounds.useSpatializer)
-                        {
-                            AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "toggle Use Spatializer");
-                            _sounds.useSpatializer = newSpatialize;
-                        }
-
-                        if (SpatializerHelper.IsResonanceAudioSpatializer)
-                        {
-                            if (_sounds.useSpatializer)
-                            {
-                                var newwPost = EditorGUILayout.Toggle(new GUIContent("Spatialize Post FX", "Turn this on to Spatialize Post Effects (Resonance Audio option)."), _sounds.useSpatializerPostFX);
-                                if (newwPost != _sounds.useSpatializerPostFX)
-                                {
-                                    AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "toggle Spatialize Post FX");
-                                    _sounds.useSpatializerPostFX = newwPost;
-                                }
-                            }
-
-                            GUI.contentColor = DTGUIHelper.BrightButtonColor;
-
-                            var newRes = EditorGUILayout.Toggle(new GUIContent("Add Res. Audio Sources", "This will immediately add a Resonance Audio Source component to every Variation in every Sound Group, and also add one to any Sound Groups created at runtime (from Dynamic Sound Group Creators)"), _sounds.addResonanceAudioSources);
-                            if (newRes != _sounds.addResonanceAudioSources)
-                            {
-                                if (!ResonanceAudioHelper.DarkTonicResonanceAudioPackageInstalled())
-                                {
-                                    DTGUIHelper.ShowAlert("Install the optional package 'MA_ResonanceAudio' to get this to work properly.");
-                                }
-                                else
-                                {
-                                    AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "toggle Add Res. Audio Sources");
-                                    _sounds.addResonanceAudioSources = newRes;
-
-                                    if (newRes)
-                                    {
-                                        ResonanceAudioHelper.AddResonanceAudioSourceToAllVariations();
-                                    }
-                                    else
-                                    {
-                                        ResonanceAudioHelper.RemoveResonanceAudioSourceFromAllVariations();
-                                    }
-                                }
-                            }
-
-                            GUI.contentColor = Color.white;
-                        }
-                        else if (SpatializerHelper.IsOculusAudioSpatializer)
-                        {
-                            GUI.contentColor = DTGUIHelper.BrightButtonColor;
-
-                            var newOculus = EditorGUILayout.Toggle(new GUIContent("Add Oculus Audio Sources", "This will immediately add an ONSP Audio Source component to every Variation in every Sound Group, and also add one to any Sound Groups created at runtime (from Dynamic Sound Group Creators)"), _sounds.addOculusAudioSources);
-                            if (newOculus != _sounds.addOculusAudioSources)
-                            {
-                                if (!OculusAudioHelper.DarkTonicOculusAudioPackageInstalled())
-                                {
-                                    DTGUIHelper.ShowAlert("Install the optional package 'MA_Oculus' to get this to work properly.");
-                                }
-                                else
-                                {
-                                    AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "toggle Add Oculus Audio Sources");
-                                    _sounds.addOculusAudioSources = newOculus;
-
-                                    if (newOculus)
-                                    {
-                                        OculusAudioHelper.AddOculusAudioSourceToAllVariations();
-                                    }
-                                    else
-                                    {
-                                        OculusAudioHelper.RemoveOculusAudioSourceFromAllVariations();
-                                    }
-                                }
-                            }
-
-                            GUI.contentColor = Color.white;
-                        }
-
-                    }
-
-                    EditorGUILayout.EndVertical();
-                    EditorGUI.indentLevel = 1;
+                    labelName += " (" + SpatializerHelper.SelectedSpatializer + ")";
+                }
+                else
+                {
+                    labelName += " (No Spatializer selected)";
                 }
 
+                var newVR = DTGUIHelper.Foldout(_sounds.vrSettingsExpanded, labelName);
+                if (newVR != _sounds.vrSettingsExpanded)
+                {
+                    AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "toggle VR Settings");
+                    _sounds.vrSettingsExpanded = newVR;
+                }
+                EditorGUILayout.EndHorizontal();
+                EditorGUILayout.EndVertical();
+
+                if (_sounds.vrSettingsExpanded)
+                {
+                    EditorGUI.indentLevel = 0;
+                    if (!SpatializerHelper.IsSupportedSpatializer)
+                    {
+                        DTGUIHelper.ShowLargeBarAlert("You must select a supported Spatializer Plugin on the Audio Settings dialog before settings here will have any effect. Oculus and Resonance Audio are currently supported.");
+                    }
+
+                    var newSpatialize = EditorGUILayout.Toggle(new GUIContent("Use Spatializer", "Turn this on if you have selected OculusSpatializer for the Spatializer Plugin on the AudioManager settings screen. All Sound Group Audio Sources will automatically turn on 'Spatialize'."), _sounds.useSpatializer);
+                    if (newSpatialize != _sounds.useSpatializer)
+                    {
+                        AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "toggle Use Spatializer");
+                        _sounds.useSpatializer = newSpatialize;
+                    }
+
+                    if (SpatializerHelper.IsResonanceAudioSpatializer)
+                    {
+                        if (_sounds.useSpatializer)
+                        {
+                            var newwPost = EditorGUILayout.Toggle(new GUIContent("Spatialize Post FX", "Turn this on to Spatialize Post Effects (Resonance Audio option)."), _sounds.useSpatializerPostFX);
+                            if (newwPost != _sounds.useSpatializerPostFX)
+                            {
+                                AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "toggle Spatialize Post FX");
+                                _sounds.useSpatializerPostFX = newwPost;
+                            }
+                        }
+
+                        GUI.contentColor = DTGUIHelper.BrightButtonColor;
+
+                        var newRes = EditorGUILayout.Toggle(new GUIContent("Add Res. Audio Sources", "This will immediately add a Resonance Audio Source component to every Variation in every Sound Group, and also add one to any Sound Groups created at runtime (from Dynamic Sound Group Creators)"), _sounds.addResonanceAudioSources);
+                        if (newRes != _sounds.addResonanceAudioSources)
+                        {
+                            if (!ResonanceAudioHelper.DarkTonicResonanceAudioPackageInstalled())
+                            {
+                                DTGUIHelper.ShowAlert("Install the optional package 'MA_ResonanceAudio' to get this to work properly.");
+                            }
+                            else
+                            {
+                                AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "toggle Add Res. Audio Sources");
+                                _sounds.addResonanceAudioSources = newRes;
+
+                                if (newRes)
+                                {
+                                    ResonanceAudioHelper.AddResonanceAudioSourceToAllVariations();
+                                }
+                                else
+                                {
+                                    ResonanceAudioHelper.RemoveResonanceAudioSourceFromAllVariations();
+                                }
+                            }
+                        }
+
+                        GUI.contentColor = Color.white;
+                    }
+                    else if (SpatializerHelper.IsOculusAudioSpatializer)
+                    {
+                        GUI.contentColor = DTGUIHelper.BrightButtonColor;
+
+                        var newOculus = EditorGUILayout.Toggle(new GUIContent("Add Oculus Audio Sources", "This will immediately add an ONSP Audio Source component to every Variation in every Sound Group, and also add one to any Sound Groups created at runtime (from Dynamic Sound Group Creators)"), _sounds.addOculusAudioSources);
+                        if (newOculus != _sounds.addOculusAudioSources)
+                        {
+                            if (!OculusAudioHelper.DarkTonicOculusAudioPackageInstalled())
+                            {
+                                DTGUIHelper.ShowAlert("Install the optional package 'MA_Oculus' to get this to work properly.");
+                            }
+                            else
+                            {
+                                AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "toggle Add Oculus Audio Sources");
+                                _sounds.addOculusAudioSources = newOculus;
+
+                                if (newOculus)
+                                {
+                                    OculusAudioHelper.AddOculusAudioSourceToAllVariations();
+                                }
+                                else
+                                {
+                                    OculusAudioHelper.RemoveOculusAudioSourceFromAllVariations();
+                                }
+                            }
+                        }
+
+                        GUI.contentColor = Color.white;
+                    }
+
+                }
+
+                EditorGUILayout.EndVertical();
+                EditorGUI.indentLevel = 1;
                 DTGUIHelper.EndGroupedControls();
             }
 
@@ -3030,32 +3017,28 @@ namespace DarkTonic.MasterAudio.EditorScripts
                         });
 
 
-#if UNITY_2018_3_OR_NEWER
-                    bool wasDestroyed = false;
+                        bool wasDestroyed = false;
 
-                    if (PrefabUtility.IsPartOfPrefabInstance(_sounds)) {
-                        var prefabPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(_sounds);
-                        GameObject prefabRoot = PrefabUtility.LoadPrefabContents(prefabPath);
+                        if (PrefabUtility.IsPartOfPrefabInstance(_sounds)) {
+                            var prefabPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(_sounds);
+                            GameObject prefabRoot = PrefabUtility.LoadPrefabContents(prefabPath);
 
-                        var deadTrans = prefabRoot.transform.Find(groupToDelete.name);
+                            var deadTrans = prefabRoot.transform.Find(groupToDelete.name);
 
-                        if (deadTrans != null) {
-                            // Destroy child objects or components on rootGO
-                            DestroyImmediate(deadTrans.gameObject); // can't undo
-                            wasDestroyed = true;
+                            if (deadTrans != null) {
+                                // Destroy child objects or components on rootGO
+                                DestroyImmediate(deadTrans.gameObject); // can't undo
+                                wasDestroyed = true;
+                            } 
+
+                            PrefabUtility.SaveAsPrefabAsset(prefabRoot, prefabPath);
+                            PrefabUtility.UnloadPrefabContents(prefabRoot);
                         } 
-
-                        PrefabUtility.SaveAsPrefabAsset(prefabRoot, prefabPath);
-                        PrefabUtility.UnloadPrefabContents(prefabRoot);
-                    } 
                     
-                    if (!wasDestroyed) {
-                        // delete variation from Hierarchy
-                        AudioUndoHelper.DestroyForUndo(groupToDelete);
-                    }
-#else
-                        AudioUndoHelper.DestroyForUndo(groupToDelete);
-#endif
+                        if (!wasDestroyed) {
+                            // delete variation from Hierarchy
+                            AudioUndoHelper.DestroyForUndo(groupToDelete);
+                        }
 
 
                         MasterAudio.RescanGroupsNow();
@@ -4371,7 +4354,7 @@ namespace DarkTonic.MasterAudio.EditorScripts
                                 DTGUIHelper.ShowLargeBarAlert(numSelected + " of " + totalSongs + " Songs selected - adjustments to a selected Song will affect all selected Songs.");
                             }
 
-                            var newTransType = (MasterAudio.SongFadeInPosition)EditorGUILayout.EnumPopup("Song Transition Type", aList.songTransitionType);
+                            var newTransType = (MasterAudio.SongFadeInPosition)EditorGUILayout.EnumPopup(new GUIContent("Song Transition Type", "If you choose 'New Clip From Beginning', then 'Begin Song Time Mode' for each Song will be used."), aList.songTransitionType);
                             if (newTransType != aList.songTransitionType)
                             {
                                 AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "change Song Transition Type");
@@ -5096,10 +5079,10 @@ namespace DarkTonic.MasterAudio.EditorScripts
                                     {
                                         if (useLastKnownPosition && aSong.songStartTimeMode != MasterAudio.CustomSongStartTimeMode.Beginning)
                                         {
-                                            DTGUIHelper.ShowLargeBarAlert("In this Song Transition Type, the Song Start Time Mode will only be used the first time a song is played.");
+                                            DTGUIHelper.ShowLargeBarAlert("In this Song Transition Type, the Begin Song Time Mode will only be used the first time a song is played.");
                                         }
 
-                                        var startTimeMode = (MasterAudio.CustomSongStartTimeMode)EditorGUILayout.EnumPopup("Song Start Time Mode", aSong.songStartTimeMode);
+                                        var startTimeMode = (MasterAudio.CustomSongStartTimeMode)EditorGUILayout.EnumPopup("Begin Song Time Mode", aSong.songStartTimeMode);
                                         if (startTimeMode != aSong.songStartTimeMode)
                                         {
                                             if (aList.bulkEditMode && aSong.isChecked)
@@ -5108,7 +5091,7 @@ namespace DarkTonic.MasterAudio.EditorScripts
                                             }
                                             else
                                             {
-                                                AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "change Song Start Time Mode");
+                                                AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "change Begin Song Time Mode");
                                                 aSong.songStartTimeMode = startTimeMode;
                                             }
                                         }
@@ -5179,9 +5162,37 @@ namespace DarkTonic.MasterAudio.EditorScripts
                                                     }
                                                 }
                                                 break;
+                                            case MasterAudio.CustomSongStartTimeMode.Section:
+                                                var newVal = EditorGUILayout.FloatField("Section Start Time (sec)", aSong.sectionStartTime);
+                                                if (newVal < 0)
+                                                {
+                                                    newVal = 0;
+                                                }
+                                                if (newVal != aSong.sectionStartTime)
+                                                {
+                                                    AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "change Section Start Time (sec)");
+                                                    aSong.sectionStartTime = newVal;
+                                                }
+
+                                                newVal = EditorGUILayout.FloatField("Section End Time (sec)", aSong.sectionEndTime);
+                                                if (newVal < 0)
+                                                {
+                                                    newVal = 0;
+                                                }
+                                                if (newVal < aSong.sectionStartTime)
+                                                {
+                                                    newVal = aSong.sectionStartTime;
+                                                }
+                                                if (newVal != aSong.sectionEndTime)
+                                                {
+                                                    AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "change Section End Time (sec)");
+                                                    aSong.sectionEndTime = newVal;
+                                                }
+                                                break;
                                         }
                                     }
 
+                                    EditorGUI.indentLevel = 0;
                                     GUI.color = Color.white;
                                     GUI.backgroundColor = Color.white;
                                     exp = EditorGUILayout.BeginToggleGroup(" Fire 'Song Started' Event", aSong.songStartedEventExpanded);
@@ -6260,7 +6271,6 @@ namespace DarkTonic.MasterAudio.EditorScripts
 
         private void DeleteSoundGroup(GameObject groupToDelete)
         {
-#if UNITY_2018_3_OR_NEWER
             bool wasDestroyed = false;
 
             Transform deadGroup = null;
@@ -6287,16 +6297,10 @@ namespace DarkTonic.MasterAudio.EditorScripts
                 // delete variation from Hierarchy
                 AudioUndoHelper.DestroyForUndo(groupToDelete.gameObject);
             }
-#else
-            if (groupToDelete != null) {
-                AudioUndoHelper.DestroyForUndo(groupToDelete);
-            }
-#endif
         }
 
         private void DeleteVaration(Transform groupTransform, string variationName)
         {
-#if UNITY_2018_3_OR_NEWER
             bool wasDestroyed = false;
 
             if (PrefabUtility.IsPartOfPrefabInstance(_sounds))
@@ -6328,13 +6332,6 @@ namespace DarkTonic.MasterAudio.EditorScripts
                 // delete variation from Hierarchy
                 AudioUndoHelper.DestroyForUndo(deadVariationTrans.gameObject);
             }
-#else
-            var deadVariationTransform = groupTransform.Find(variationName);
-
-            if (deadVariationTransform.gameObject != null) {
-                AudioUndoHelper.DestroyForUndo(deadVariationTransform.gameObject);
-            }
-#endif
         }
 
 #if UNITY_2019_3_OR_NEWER && VIDEO_ENABLED

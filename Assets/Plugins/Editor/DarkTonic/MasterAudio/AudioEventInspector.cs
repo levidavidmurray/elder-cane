@@ -5,6 +5,9 @@ using Debug = UnityEngine.Debug;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using UnityEngine.Audio;
+#if MULTIPLAYER_ENABLED
+    using DarkTonic.MasterAudio.Multiplayer;
+#endif
 
 namespace DarkTonic.MasterAudio.EditorScripts
 {
@@ -433,8 +436,19 @@ namespace DarkTonic.MasterAudio.EditorScripts
                 _sounds.disableSounds = newDisable;
             }
 
-            if (!_sounds.disableSounds)
-            {
+            if (!_sounds.disableSounds) {
+#if MULTIPLAYER_ENABLED
+                var newMP = EditorGUILayout.Toggle("Multiplayer Broadcast", _sounds.multiplayerBroadcast);
+                if (newMP != _sounds.multiplayerBroadcast) {
+                    AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "toggle Multiplayer Broadcast");
+                    _sounds.multiplayerBroadcast = newMP;
+                }
+
+                if (_sounds.multiplayerBroadcast) {
+                    MultiplayerGUIHelper.ShowErrorIfNoMultiplayerAdapter();
+                }
+#endif
+
                 var newSpawnMode = (MasterAudio.SoundSpawnLocationMode)EditorGUILayout.EnumPopup("Sound Spawn Mode", _sounds.soundSpawnMode);
                 if (newSpawnMode != _sounds.soundSpawnMode)
                 {
@@ -1697,9 +1711,39 @@ namespace DarkTonic.MasterAudio.EditorScripts
         }
 
         // ReSharper disable once FunctionComplexityOverflow
-        private bool RenderAudioEvent(AudioEventGroup eventGrp, EventSounds.EventType eType)
-        {
+        private bool RenderAudioEvent(AudioEventGroup eventGrp, EventSounds.EventType eType) {
             DTGUIHelper.BeginGroupedControls();
+
+#if MULTIPLAYER_ENABLED
+            if (EventSounds.DisallowedMultBroadcastEventType.Contains(eType))
+            {
+                DTGUIHelper.ShowColorWarning("Spawning events will always work without Multiplayer Broadcast. For this event, it is disabled and cannot be switched on.");
+            } else if (_sounds.multiplayerBroadcast) {
+                switch (eType) {
+                    default:
+                        DTGUIHelper.ShowColorWarning("Multiplayer Broadcast is turned on globally for this script above. Uncheck it there to allow control per event.");
+                        break;
+                }
+            } else {
+                var newMP = EditorGUILayout.Toggle("Multiplayer Broadcast", eventGrp.multiplayerBroadcast);
+                if (newMP != eventGrp.multiplayerBroadcast) {
+                    AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "toggle Multiplayer Broadcast");
+                    eventGrp.multiplayerBroadcast = newMP;
+                }
+
+                if (eventGrp.multiplayerBroadcast) {
+                    MultiplayerGUIHelper.ShowErrorIfNoMultiplayerAdapter();
+                }
+            }
+
+            var hasRestrictedCategory = eventGrp.SoundEvents.Find(delegate (AudioEvent e) {
+                return EventSounds.CommandTypesExcludedFromMultiplayerBroadcast.Contains(e.currentSoundFunctionType);
+            });
+
+            if (hasRestrictedCategory != null && (_sounds.multiplayerBroadcast || eventGrp.multiplayerBroadcast)) {
+                DTGUIHelper.ShowLargeBarAlert("Unity Mixer and Persistent Settings commands ignore the Multiplayer Broadcast setting. Those only work for the local player.");
+            }
+#endif
 
             int? indexToRemove = null;
             int? indexToInsert = null;
@@ -2376,6 +2420,83 @@ namespace DarkTonic.MasterAudio.EditorScripts
                                         AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "change Glide Time");
                                         aEvent.pitchGlideTime = newGlideTime;
                                     }
+
+                                    if (_maInScene)
+                                    {
+                                        var existingIndex = _customEventNames.IndexOf(aEvent.theCustomEventName);
+
+                                        int? customEventIndex = null;
+
+                                        EditorGUI.indentLevel = 2;
+
+                                        var noEvent = false;
+                                        var noMatch = false;
+
+                                        if (existingIndex >= 1)
+                                        {
+                                            customEventIndex = EditorGUILayout.Popup("Finished Custom Event", existingIndex, _customEventNames.ToArray());
+                                            if (existingIndex == 1)
+                                            {
+                                                noEvent = true;
+                                            }
+                                        }
+                                        else if (existingIndex == -1 && aEvent.soundType == MasterAudio.NoGroupName)
+                                        {
+                                            customEventIndex = EditorGUILayout.Popup("Finished Custom Event", existingIndex, _customEventNames.ToArray());
+                                        }
+                                        else
+                                        { // non-match
+                                            noMatch = true;
+                                            var newEventName = EditorGUILayout.TextField("Finished Custom Event", aEvent.theCustomEventName);
+                                            if (newEventName != aEvent.theCustomEventName)
+                                            {
+                                                AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "change Finished Custom Event");
+                                                aEvent.theCustomEventName = newEventName;
+                                            }
+
+                                            var newIndex = EditorGUILayout.Popup("All Custom Events", -1, _customEventNames.ToArray());
+                                            if (newIndex >= 0)
+                                            {
+                                                customEventIndex = newIndex;
+                                            }
+                                        }
+
+                                        if (noEvent)
+                                        {
+                                            DTGUIHelper.ShowRedError("No Custom Event specified. This section will do nothing.");
+                                        }
+                                        else if (noMatch)
+                                        {
+                                            DTGUIHelper.ShowRedError("Custom Event found no match. Type in or choose one.");
+                                        }
+
+                                        if (customEventIndex.HasValue)
+                                        {
+                                            if (existingIndex != customEventIndex.Value)
+                                            {
+                                                AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "change Custom Event");
+                                            }
+                                            switch (customEventIndex.Value)
+                                            {
+                                                case -1:
+                                                    aEvent.theCustomEventName = MasterAudio.NoGroupName;
+                                                    break;
+                                                default:
+                                                    aEvent.theCustomEventName = _customEventNames[customEventIndex.Value];
+                                                    break;
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        var newCustomEvent = EditorGUILayout.TextField("Finished Custom Event", aEvent.theCustomEventName);
+                                        if (newCustomEvent != aEvent.theCustomEventName)
+                                        {
+                                            AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "Finished Custom Event");
+                                            aEvent.theCustomEventName = newCustomEvent;
+                                        }
+                                    }
+
                                 }
                                 EditorGUI.indentLevel = 1;
 
@@ -2854,6 +2975,83 @@ namespace DarkTonic.MasterAudio.EditorScripts
                                                 AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "change Glide Time");
                                                 aEvent.pitchGlideTime = newGlideTime;
                                             }
+
+                                            if (_maInScene)
+                                            {
+                                                var existingIndex = _customEventNames.IndexOf(aEvent.theCustomEventName);
+
+                                                int? customEventIndex = null;
+
+                                                EditorGUI.indentLevel = 2;
+
+                                                var noEvent = false;
+                                                var noMatch = false;
+
+                                                if (existingIndex >= 1)
+                                                {
+                                                    customEventIndex = EditorGUILayout.Popup("Finished Custom Event", existingIndex, _customEventNames.ToArray());
+                                                    if (existingIndex == 1)
+                                                    {
+                                                        noEvent = true;
+                                                    }
+                                                }
+                                                else if (existingIndex == -1 && aEvent.soundType == MasterAudio.NoGroupName)
+                                                {
+                                                    customEventIndex = EditorGUILayout.Popup("Finished Custom Event", existingIndex, _customEventNames.ToArray());
+                                                }
+                                                else
+                                                { // non-match
+                                                    noMatch = true;
+                                                    var newEventName = EditorGUILayout.TextField("Finished Custom Event", aEvent.theCustomEventName);
+                                                    if (newEventName != aEvent.theCustomEventName)
+                                                    {
+                                                        AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "change Finished Custom Event");
+                                                        aEvent.theCustomEventName = newEventName;
+                                                    }
+
+                                                    var newIndex = EditorGUILayout.Popup("All Custom Events", -1, _customEventNames.ToArray());
+                                                    if (newIndex >= 0)
+                                                    {
+                                                        customEventIndex = newIndex;
+                                                    }
+                                                }
+
+                                                if (noEvent)
+                                                {
+                                                    DTGUIHelper.ShowRedError("No Custom Event specified. This section will do nothing.");
+                                                }
+                                                else if (noMatch)
+                                                {
+                                                    DTGUIHelper.ShowRedError("Custom Event found no match. Type in or choose one.");
+                                                }
+
+                                                if (customEventIndex.HasValue)
+                                                {
+                                                    if (existingIndex != customEventIndex.Value)
+                                                    {
+                                                        AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "change Custom Event");
+                                                    }
+                                                    switch (customEventIndex.Value)
+                                                    {
+                                                        case -1:
+                                                            aEvent.theCustomEventName = MasterAudio.NoGroupName;
+                                                            break;
+                                                        default:
+                                                            aEvent.theCustomEventName = _customEventNames[customEventIndex.Value];
+                                                            break;
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                var newCustomEvent = EditorGUILayout.TextField("Finished Custom Event", aEvent.theCustomEventName);
+                                                if (newCustomEvent != aEvent.theCustomEventName)
+                                                {
+                                                    AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "Finished Custom Event");
+                                                    aEvent.theCustomEventName = newCustomEvent;
+                                                }
+                                            }
+
                                         }
                                         else
                                         {
@@ -2912,6 +3110,92 @@ namespace DarkTonic.MasterAudio.EditorScripts
                                         {
                                             AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "toggle Restore Volume After Fade");
                                             aEvent.restoreVolumeAfterFade = newRestore;
+                                        }
+
+                                        var newCust = EditorGUILayout.Toggle("Custom Event After Fade", aEvent.fireCustomEventAfterFade);
+                                        if (newCust != aEvent.fireCustomEventAfterFade)
+                                        {
+                                            AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "toggle Custom Event After Fade");
+                                            aEvent.fireCustomEventAfterFade = newCust;
+                                        }
+
+                                        if (aEvent.fireCustomEventAfterFade)
+                                        {
+                                            if (_maInScene)
+                                            {
+                                                var existingIndex = _customEventNames.IndexOf(aEvent.theCustomEventName);
+
+                                                int? customEventIndex = null;
+
+                                                EditorGUI.indentLevel = 2;
+
+                                                var noEvent = false;
+                                                var noMatch = false;
+
+                                                if (existingIndex >= 1)
+                                                {
+                                                    customEventIndex = EditorGUILayout.Popup("Finished Custom Event", existingIndex, _customEventNames.ToArray());
+                                                    if (existingIndex == 1)
+                                                    {
+                                                        noEvent = true;
+                                                    }
+                                                }
+                                                else if (existingIndex == -1 && aEvent.soundType == MasterAudio.NoGroupName)
+                                                {
+                                                    customEventIndex = EditorGUILayout.Popup("Finished Custom Event", existingIndex, _customEventNames.ToArray());
+                                                }
+                                                else
+                                                { // non-match
+                                                    noMatch = true;
+                                                    var newEventName = EditorGUILayout.TextField("Finished Custom Event", aEvent.theCustomEventName);
+                                                    if (newEventName != aEvent.theCustomEventName)
+                                                    {
+                                                        AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "change Finished Custom Event");
+                                                        aEvent.theCustomEventName = newEventName;
+                                                    }
+
+                                                    var newIndex = EditorGUILayout.Popup("All Custom Events", -1, _customEventNames.ToArray());
+                                                    if (newIndex >= 0)
+                                                    {
+                                                        customEventIndex = newIndex;
+                                                    }
+                                                }
+
+                                                if (noEvent)
+                                                {
+                                                    DTGUIHelper.ShowRedError("No Custom Event specified. This section will do nothing.");
+                                                }
+                                                else if (noMatch)
+                                                {
+                                                    DTGUIHelper.ShowRedError("Custom Event found no match. Type in or choose one.");
+                                                }
+
+                                                if (customEventIndex.HasValue)
+                                                {
+                                                    if (existingIndex != customEventIndex.Value)
+                                                    {
+                                                        AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "change Custom Event");
+                                                    }
+                                                    switch (customEventIndex.Value)
+                                                    {
+                                                        case -1:
+                                                            aEvent.theCustomEventName = MasterAudio.NoGroupName;
+                                                            break;
+                                                        default:
+                                                            aEvent.theCustomEventName = _customEventNames[customEventIndex.Value];
+                                                            break;
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                var newCustomEvent = EditorGUILayout.TextField("Finished Custom Event", aEvent.theCustomEventName);
+                                                if (newCustomEvent != aEvent.theCustomEventName)
+                                                {
+                                                    AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "Finished Custom Event");
+                                                    aEvent.theCustomEventName = newCustomEvent;
+                                                }
+                                            }
                                         }
 
                                         break;
@@ -3167,6 +3451,82 @@ namespace DarkTonic.MasterAudio.EditorScripts
                                                 AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "change Glide Time");
                                                 aEvent.pitchGlideTime = newGlideTime;
                                             }
+
+                                            if (_maInScene)
+                                            {
+                                                var existingIndex = _customEventNames.IndexOf(aEvent.theCustomEventName);
+
+                                                int? customEventIndex = null;
+
+                                                EditorGUI.indentLevel = 2;
+
+                                                var noEvent = false;
+                                                var noMatch = false;
+
+                                                if (existingIndex >= 1)
+                                                {
+                                                    customEventIndex = EditorGUILayout.Popup("Finished Custom Event", existingIndex, _customEventNames.ToArray());
+                                                    if (existingIndex == 1)
+                                                    {
+                                                        noEvent = true;
+                                                    }
+                                                }
+                                                else if (existingIndex == -1 && aEvent.soundType == MasterAudio.NoGroupName)
+                                                {
+                                                    customEventIndex = EditorGUILayout.Popup("Finished Custom Event", existingIndex, _customEventNames.ToArray());
+                                                }
+                                                else
+                                                { // non-match
+                                                    noMatch = true;
+                                                    var newEventName = EditorGUILayout.TextField("Finished Custom Event", aEvent.theCustomEventName);
+                                                    if (newEventName != aEvent.theCustomEventName)
+                                                    {
+                                                        AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "change Finished Custom Event");
+                                                        aEvent.theCustomEventName = newEventName;
+                                                    }
+
+                                                    var newIndex = EditorGUILayout.Popup("All Custom Events", -1, _customEventNames.ToArray());
+                                                    if (newIndex >= 0)
+                                                    {
+                                                        customEventIndex = newIndex;
+                                                    }
+                                                }
+
+                                                if (noEvent)
+                                                {
+                                                    DTGUIHelper.ShowRedError("No Custom Event specified. This section will do nothing.");
+                                                }
+                                                else if (noMatch)
+                                                {
+                                                    DTGUIHelper.ShowRedError("Custom Event found no match. Type in or choose one.");
+                                                }
+
+                                                if (customEventIndex.HasValue)
+                                                {
+                                                    if (existingIndex != customEventIndex.Value)
+                                                    {
+                                                        AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "change Custom Event");
+                                                    }
+                                                    switch (customEventIndex.Value)
+                                                    {
+                                                        case -1:
+                                                            aEvent.theCustomEventName = MasterAudio.NoGroupName;
+                                                            break;
+                                                        default:
+                                                            aEvent.theCustomEventName = _customEventNames[customEventIndex.Value];
+                                                            break;
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                var newCustomEvent = EditorGUILayout.TextField("Finished Custom Event", aEvent.theCustomEventName);
+                                                if (newCustomEvent != aEvent.theCustomEventName)
+                                                {
+                                                    AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "Finished Custom Event");
+                                                    aEvent.theCustomEventName = newCustomEvent;
+                                                }
+                                            }
                                         }
                                         else
                                         {
@@ -3232,6 +3592,92 @@ namespace DarkTonic.MasterAudio.EditorScripts
                                         {
                                             AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "toggle Restore Volume After Fade");
                                             aEvent.restoreVolumeAfterFade = newRestore;
+                                        }
+
+                                        var newCust = EditorGUILayout.Toggle("Custom Event After Fade", aEvent.fireCustomEventAfterFade);
+                                        if (newCust != aEvent.fireCustomEventAfterFade)
+                                        {
+                                            AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "toggle Custom Event After Fade");
+                                            aEvent.fireCustomEventAfterFade = newCust;
+                                        }
+
+                                        if (aEvent.fireCustomEventAfterFade)
+                                        {
+                                            if (_maInScene)
+                                            {
+                                                var existingIndex = _customEventNames.IndexOf(aEvent.theCustomEventName);
+
+                                                int? customEventIndex = null;
+
+                                                EditorGUI.indentLevel = 2;
+
+                                                var noEvent = false;
+                                                var noMatch = false;
+
+                                                if (existingIndex >= 1)
+                                                {
+                                                    customEventIndex = EditorGUILayout.Popup("Finished Custom Event", existingIndex, _customEventNames.ToArray());
+                                                    if (existingIndex == 1)
+                                                    {
+                                                        noEvent = true;
+                                                    }
+                                                }
+                                                else if (existingIndex == -1 && aEvent.soundType == MasterAudio.NoGroupName)
+                                                {
+                                                    customEventIndex = EditorGUILayout.Popup("Finished Custom Event", existingIndex, _customEventNames.ToArray());
+                                                }
+                                                else
+                                                { // non-match
+                                                    noMatch = true;
+                                                    var newEventName = EditorGUILayout.TextField("Finished Custom Event", aEvent.theCustomEventName);
+                                                    if (newEventName != aEvent.theCustomEventName)
+                                                    {
+                                                        AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "change Finished Custom Event");
+                                                        aEvent.theCustomEventName = newEventName;
+                                                    }
+
+                                                    var newIndex = EditorGUILayout.Popup("All Custom Events", -1, _customEventNames.ToArray());
+                                                    if (newIndex >= 0)
+                                                    {
+                                                        customEventIndex = newIndex;
+                                                    }
+                                                }
+
+                                                if (noEvent)
+                                                {
+                                                    DTGUIHelper.ShowRedError("No Custom Event specified. This section will do nothing.");
+                                                }
+                                                else if (noMatch)
+                                                {
+                                                    DTGUIHelper.ShowRedError("Custom Event found no match. Type in or choose one.");
+                                                }
+
+                                                if (customEventIndex.HasValue)
+                                                {
+                                                    if (existingIndex != customEventIndex.Value)
+                                                    {
+                                                        AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "change Custom Event");
+                                                    }
+                                                    switch (customEventIndex.Value)
+                                                    {
+                                                        case -1:
+                                                            aEvent.theCustomEventName = MasterAudio.NoGroupName;
+                                                            break;
+                                                        default:
+                                                            aEvent.theCustomEventName = _customEventNames[customEventIndex.Value];
+                                                            break;
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                var newCustomEvent = EditorGUILayout.TextField("Finished Custom Event", aEvent.theCustomEventName);
+                                                if (newCustomEvent != aEvent.theCustomEventName)
+                                                {
+                                                    AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "Finished Custom Event");
+                                                    aEvent.theCustomEventName = newCustomEvent;
+                                                }
+                                            }
                                         }
 
                                         break;

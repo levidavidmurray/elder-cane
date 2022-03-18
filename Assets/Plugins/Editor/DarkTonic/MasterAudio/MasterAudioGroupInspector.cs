@@ -1445,12 +1445,10 @@ namespace DarkTonic.MasterAudio.EditorScripts
 
                     if (!Application.isPlaying)
                     {
-#if UNITY_2018_3_OR_NEWER
                         if (GUILayout.Button(new GUIContent(MasterAudioInspectorResources.CopyTexture, "Click to clone Variation"), EditorStyles.toolbarButton, GUILayout.Height(16), GUILayout.Width(40)))
                         {
                             CloneVariation(i);
                         }
-#endif
                     }
 
                     if (!isVideoPlayersGroup)
@@ -1867,7 +1865,7 @@ namespace DarkTonic.MasterAudio.EditorScripts
                             }
                         }
 
-                        var newWeight = EditorGUILayout.IntSlider("Voices (Weight)", variation.weight, 0, 100);
+                        var newWeight = EditorGUILayout.IntSlider("Voices / Weight", variation.weight, 0, 100);
                         if (newWeight != variation.weight)
                         {
                             if (_group.copySettingsExpanded && variation.isChecked)
@@ -1876,7 +1874,7 @@ namespace DarkTonic.MasterAudio.EditorScripts
                             }
                             else
                             {
-                                AudioUndoHelper.RecordObjectPropertyForUndo(ref varIsDirty, variation, "change Voices (Weight)");
+                                AudioUndoHelper.RecordObjectPropertyForUndo(ref varIsDirty, variation, "change Voices / Weight");
                                 variation.weight = newWeight;
                             }
                         }
@@ -2297,7 +2295,6 @@ namespace DarkTonic.MasterAudio.EditorScripts
 
                 if (deadVar != null)
                 {
-#if UNITY_2018_3_OR_NEWER
                     var wasDestroyed = false;
 
                     if (PrefabUtility.IsPartOfPrefabInstance(_group))
@@ -2327,10 +2324,6 @@ namespace DarkTonic.MasterAudio.EditorScripts
                         // delete variation from Hierarchy
                         AudioUndoHelper.DestroyForUndo(deadVar.gameObject);
                     }
-#else
-                    // delete variation from Hierarchy
-                    AudioUndoHelper.DestroyForUndo(deadVar.gameObject);
-#endif
 
                     // delete variation from list.
                     if (_group.groupVariations.Count >= deadChildIndex.Value)
@@ -3200,7 +3193,6 @@ namespace DarkTonic.MasterAudio.EditorScripts
             }
         }
 
-#if UNITY_2018_3_OR_NEWER
         private void CloneVariation(int index)
         {
             var gameObj = _group.groupVariations[index].gameObject;
@@ -3238,7 +3230,6 @@ namespace DarkTonic.MasterAudio.EditorScripts
                 dupe.transform.parent = _group.transform;
             }
         }
-#endif
 
         private void SetSpatialBlend()
         {

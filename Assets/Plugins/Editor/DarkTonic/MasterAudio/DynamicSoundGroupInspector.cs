@@ -196,6 +196,16 @@ namespace DarkTonic.MasterAudio.EditorScripts
 
             if (!maInScene || ma.prioritizeOnDistance)
             {
+                var newContinual = EditorGUILayout.Toggle("Use Clip Age Priority", _group.useClipAgePriority);
+                if (newContinual != _group.useClipAgePriority)
+                {
+                    AudioUndoHelper.RecordObjectPropertyForUndo(ref isDirty, _group, "toggle Use Clip Age Priority");
+                    _group.useClipAgePriority = newContinual;
+                }
+            }
+
+            if (!maInScene || ma.prioritizeOnDistance)
+            {
                 var hiPri = EditorGUILayout.Toggle("Always Highest Priority", _group.alwaysHighestPriority);
                 if (hiPri != _group.alwaysHighestPriority)
                 {
@@ -1249,11 +1259,9 @@ namespace DarkTonic.MasterAudio.EditorScripts
 
                     if (!Application.isPlaying)
                     {
-#if UNITY_2018_3_OR_NEWER
-                    if (GUILayout.Button(new GUIContent(MasterAudioInspectorResources.CopyTexture, "Click to clone Variation"), EditorStyles.toolbarButton, GUILayout.Height(16), GUILayout.Width(40))) {
-                        CloneVariation(i);
-                    }
-#endif
+                        if (GUILayout.Button(new GUIContent(MasterAudioInspectorResources.CopyTexture, "Click to clone Variation"), EditorStyles.toolbarButton, GUILayout.Height(16), GUILayout.Width(40))) {
+                            CloneVariation(i);
+                        }
                     }
 
                     var varIsDirty = false;
@@ -1570,7 +1578,7 @@ namespace DarkTonic.MasterAudio.EditorScripts
                         }
                     }
 
-                    var newWeight = EditorGUILayout.IntSlider("Voices (Weight)", variation.weight, 0, 100);
+                    var newWeight = EditorGUILayout.IntSlider("Voices / Weight", variation.weight, 0, 100);
                     if (newWeight != variation.weight)
                     {
                         if (_group.copySettingsExpanded && variation.isChecked)
@@ -1579,7 +1587,7 @@ namespace DarkTonic.MasterAudio.EditorScripts
                         }
                         else
                         {
-                            AudioUndoHelper.RecordObjectPropertyForUndo(ref varIsDirty, variation, "change Voices (Weight)");
+                            AudioUndoHelper.RecordObjectPropertyForUndo(ref varIsDirty, variation, "change Voices / Weight");
                             variation.weight = newWeight;
                         }
                     }
@@ -1993,35 +2001,30 @@ namespace DarkTonic.MasterAudio.EditorScripts
 
                 if (deadVar != null)
                 {
-#if UNITY_2018_3_OR_NEWER
-                var wasDestroyed = false;
+                    var wasDestroyed = false;
 
-                if (PrefabUtility.IsPartOfPrefabInstance(_group)) {
-                    var prefabPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(_group);
-                    GameObject prefabRoot = PrefabUtility.LoadPrefabContents(prefabPath);
+                    if (PrefabUtility.IsPartOfPrefabInstance(_group)) {
+                        var prefabPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(_group);
+                        GameObject prefabRoot = PrefabUtility.LoadPrefabContents(prefabPath);
 
-                    var groupParent = prefabRoot.transform.Find(_group.name);
-                    if (groupParent != null) {
-                        var deadTrans = groupParent.Find(deadVar.name);
-
+                        var groupParent = prefabRoot.transform.Find(_group.name);
                         if (groupParent != null) {
-                            // Destroy child objects or components on rootGO
-                            DestroyImmediate(deadTrans.gameObject); // can't undo
-                            wasDestroyed = true;
-                        } 
-                    } 
+                            var deadTrans = groupParent.Find(deadVar.name);
 
-                    PrefabUtility.SaveAsPrefabAsset(prefabRoot, prefabPath);
-                    PrefabUtility.UnloadPrefabContents(prefabRoot);
-                } 
+                            if (groupParent != null) {
+                                // Destroy child objects or components on rootGO
+                                DestroyImmediate(deadTrans.gameObject); // can't undo
+                                wasDestroyed = true;
+                            } 
+                        } 
+
+                        PrefabUtility.SaveAsPrefabAsset(prefabRoot, prefabPath);
+                        PrefabUtility.UnloadPrefabContents(prefabRoot);
+                    } 
                 
-                if (!wasDestroyed) {
-                    AudioUndoHelper.DestroyForUndo(deadVar.gameObject);
-                }
-#else
-                    // delete variation from Hierarchy
-                    AudioUndoHelper.DestroyForUndo(deadVar.gameObject);
-#endif
+                    if (!wasDestroyed) {
+                        AudioUndoHelper.DestroyForUndo(deadVar.gameObject);
+                    }
 
                     // delete variation from list.
                     if (_group.groupVariations.Count >= deadChildIndex.Value)
@@ -2807,38 +2810,36 @@ namespace DarkTonic.MasterAudio.EditorScripts
             Debug.LogWarning(changed + " Use Custom Fade(s) changed.");
         }
 
-#if UNITY_2018_3_OR_NEWER
-    private void CloneVariation(int index) {
-        var gameObj = _group.groupVariations[index].gameObject;
+        private void CloneVariation(int index) {
+            var gameObj = _group.groupVariations[index].gameObject;
 
-        if (PrefabUtility.IsPartOfPrefabInstance(_group)) {
-            var prefabPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(_group);
-            GameObject prefabRoot = PrefabUtility.LoadPrefabContents(prefabPath);
+            if (PrefabUtility.IsPartOfPrefabInstance(_group)) {
+                var prefabPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(_group);
+                GameObject prefabRoot = PrefabUtility.LoadPrefabContents(prefabPath);
 
-            var groupParent = prefabRoot.transform.Find(_group.name);
-            if (groupParent != null) {
-                var varTrans = groupParent.Find(gameObj.name);
+                var groupParent = prefabRoot.transform.Find(_group.name);
+                if (groupParent != null) {
+                    var varTrans = groupParent.Find(gameObj.name);
 
-                if (varTrans != null) {
-                    // Destroy child objects or components on rootGO
-                    var newVar = DTGUIHelper.DuplicateGameObject(varTrans.gameObject, groupParent.name, _group.groupVariations.Count + 1);
-                    newVar.transform.parent = groupParent;
+                    if (varTrans != null) {
+                        // Destroy child objects or components on rootGO
+                        var newVar = DTGUIHelper.DuplicateGameObject(varTrans.gameObject, groupParent.name, _group.groupVariations.Count + 1);
+                        newVar.transform.parent = groupParent;
+                    }
                 }
+
+                PrefabUtility.SaveAsPrefabAsset(prefabRoot, prefabPath);
+                PrefabUtility.UnloadPrefabContents(prefabRoot);
+            } else {
+                var dupe = DTGUIHelper.DuplicateGameObject(gameObj, _group.name, _group.groupVariations.Count + 1);
+
+                if (dupe == null) {
+                    return;
+                }
+
+                dupe.transform.parent = _group.transform;
             }
-
-            PrefabUtility.SaveAsPrefabAsset(prefabRoot, prefabPath);
-            PrefabUtility.UnloadPrefabContents(prefabRoot);
-        } else {
-            var dupe = DTGUIHelper.DuplicateGameObject(gameObj, _group.name, _group.groupVariations.Count + 1);
-
-            if (dupe == null) {
-                return;
-            }
-
-            dupe.transform.parent = _group.transform;
         }
-}
-#endif
 
         private void CopyFadeInTime(float fadeInTime)
         {

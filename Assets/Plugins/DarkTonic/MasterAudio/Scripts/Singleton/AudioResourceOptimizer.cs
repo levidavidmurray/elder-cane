@@ -162,10 +162,16 @@ namespace DarkTonic.MasterAudio {
             // ReSharper disable RedundantNameQualifier
             System.Action successAction, System.Action failureAction) {
 
+            var isWarmingCall = MasterAudio.IsWarming; // since this may change by the time we load the asset, we store it so we can know.
+
             // ReSharper restore RedundantNameQualifier
             if (AudioClipsByName.ContainsKey(clipName)) {
                 if (successAction != null) {
                     successAction();
+                }
+                if (isWarmingCall)
+                {
+                    DTMonoHelper.SetActive(variation.GameObj, false); // should disable itself
                 }
 
                 yield break;
@@ -185,6 +191,10 @@ namespace DarkTonic.MasterAudio {
                 if (failureAction != null) {
                     failureAction();
                 }
+                if (isWarmingCall)
+                {
+                    DTMonoHelper.SetActive(variation.GameObj, false); // should disable itself
+                }
                 yield break;
             }
 
@@ -193,6 +203,10 @@ namespace DarkTonic.MasterAudio {
 
                 if (failureAction != null) {
                     failureAction();
+                }
+                if (isWarmingCall)
+                {
+                    DTMonoHelper.SetActive(variation.GameObj, false); // should disable itself
                 }
                 yield break;
             }
@@ -214,6 +228,10 @@ namespace DarkTonic.MasterAudio {
 
             if (successAction != null) {
                 successAction();
+            }
+            if (isWarmingCall)
+            {
+                DTMonoHelper.SetActive(variation.GameObj, false); // should disable itself
             }
         }
 

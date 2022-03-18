@@ -7,6 +7,7 @@ namespace DarkTonic.MasterAudio.EditorScripts
     [InitializeOnLoad]
     public class MasterAudioWelcomeWindow : EditorWindow
     {
+        private const string MultiplayerSoundSymbol = "MULTIPLAYER_ENABLED";
         private const string Disable3DSoundSymbol = "DISABLE_3D_SOUND";
         private const string Physics2DSymbol = "PHY2D_ENABLED";
         private const string Physics3DSymbol = "PHY3D_ENABLED";
@@ -28,15 +29,13 @@ namespace DarkTonic.MasterAudio.EditorScripts
         public static MasterAudioWelcomeWindow ShowWindow()
         {
             var window = GetWindow<MasterAudioWelcomeWindow>(false, "Welcome");
-            var height = 320;
+            var height = 356;
 
-#if UNITY_2018_2_OR_NEWER
     #if UNITY_2019_3_OR_NEWER
-            height += 18;    
+            // correct height
     #else
-            height += 26;
+            height += 8;
     #endif
-#endif
 
             window.minSize = new Vector2(482, height);
             window.maxSize = new Vector2(482, height);
@@ -109,7 +108,7 @@ namespace DarkTonic.MasterAudio.EditorScripts
 #if UNITY_2019_3_OR_NEWER
             DTGUIHelper.VerticalSpace(1);
 #endif
-            // physics 2D
+			// physics 2D
             var disable3DSound = DTDefineHelper.DoesScriptingDefineSymbolExist(Disable3DSoundSymbol);
             var newDisable3DSound = GUILayout.Toggle(disable3DSound, " Disable 3D Sound (" + Disable3DSoundSymbol + ")");
             if (newDisable3DSound != disable3DSound)
@@ -121,6 +120,21 @@ namespace DarkTonic.MasterAudio.EditorScripts
                 else
                 {
                     DTDefineHelper.TryRemoveScriptingDefineSymbols(Disable3DSoundSymbol);
+                }
+            }
+
+            // Multiplayer support
+            var enableMultiplayerSound = DTDefineHelper.DoesScriptingDefineSymbolExist(MultiplayerSoundSymbol);
+            var newEnableMulti = GUILayout.Toggle(enableMultiplayerSound, " Multiplayer Capability (" + MultiplayerSoundSymbol + ")");
+            if (newEnableMulti != enableMultiplayerSound)
+            {
+                if (newEnableMulti)
+                {
+                    DTDefineHelper.TryAddScriptingDefineSymbols(MultiplayerSoundSymbol);
+                }
+                else
+                {
+                    DTDefineHelper.TryRemoveScriptingDefineSymbols(MultiplayerSoundSymbol);
                 }
             }
 
@@ -163,37 +177,35 @@ namespace DarkTonic.MasterAudio.EditorScripts
                 }
             }
 
-#if UNITY_2018_2_OR_NEWER
-        // Video
-        var enableVideo = DTDefineHelper.DoesScriptingDefineSymbolExist(VideoSymbol);
-        var newVideo = GUILayout.Toggle(enableVideo, " Video (" + VideoSymbol + ")");
-        if (newVideo != enableVideo)
-        {
-            if (newVideo)
+            // Video
+            var enableVideo = DTDefineHelper.DoesScriptingDefineSymbolExist(VideoSymbol);
+            var newVideo = GUILayout.Toggle(enableVideo, " Video (" + VideoSymbol + ")");
+            if (newVideo != enableVideo)
             {
-                DTDefineHelper.TryAddScriptingDefineSymbols(VideoSymbol);
+                if (newVideo)
+                {
+                    DTDefineHelper.TryAddScriptingDefineSymbols(VideoSymbol);
+                }
+                else
+                {
+                    DTDefineHelper.TryRemoveScriptingDefineSymbols(VideoSymbol);
+                }
             }
-            else
-            {
-                DTDefineHelper.TryRemoveScriptingDefineSymbols(VideoSymbol);
-            }
-        }
 
-        // Addressables
-        var enableAddress = DTDefineHelper.DoesScriptingDefineSymbolExist(AddresablesSymbol);
-        var newAddress = GUILayout.Toggle(enableAddress, " Addressables (" + AddresablesSymbol + ")");
-        if (newAddress != enableAddress)
-        {
-            if (newAddress)
+            // Addressables
+            var enableAddress = DTDefineHelper.DoesScriptingDefineSymbolExist(AddresablesSymbol);
+            var newAddress = GUILayout.Toggle(enableAddress, " Addressables (" + AddresablesSymbol + ")");
+            if (newAddress != enableAddress)
             {
-                DTDefineHelper.TryAddScriptingDefineSymbols(AddresablesSymbol);
+                if (newAddress)
+                {
+                    DTDefineHelper.TryAddScriptingDefineSymbols(AddresablesSymbol);
+                }
+                else
+                {
+                    DTDefineHelper.TryRemoveScriptingDefineSymbols(AddresablesSymbol);
+                }
             }
-            else
-            {
-                DTDefineHelper.TryRemoveScriptingDefineSymbols(AddresablesSymbol);
-            }
-        }
-#endif
 
             DTGUIHelper.ShowLargeBarAlert("Enabling a package you do not have installed will cause a compile error and you will not be able to use this window to undo until you install the missing package.");
 

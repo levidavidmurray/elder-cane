@@ -20,11 +20,7 @@ namespace DarkTonic.MasterAudio.EditorScripts
         static void Init()
         {
             var window = GetWindow<MasterAudioManager>(false, "Manager");
-            var height = 558;
-
-#if UNITY_2018_2_OR_NEWER
-            height += -2;
-#endif
+            var height = 556;
 
             window.minSize = new Vector2(560, height);
             window.maxSize = new Vector2(560, height);

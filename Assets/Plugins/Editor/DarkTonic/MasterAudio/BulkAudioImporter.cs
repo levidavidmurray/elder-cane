@@ -64,6 +64,7 @@ namespace DarkTonic.MasterAudio.EditorScripts
             if (GUILayout.Button(new GUIContent("Scan Project"), EditorStyles.toolbarButton, GUILayout.Width(100)))
             {
                 BuildCache();
+                EditorGUILayout.EndHorizontal();
                 return;
             }
 
@@ -71,6 +72,7 @@ namespace DarkTonic.MasterAudio.EditorScripts
             if (GUILayout.Button(new GUIContent("Revert Selected"), EditorStyles.toolbarButton, GUILayout.Width(100)))
             {
                 RevertSelected();
+                EditorGUILayout.EndHorizontal();
                 return;
             }
 
@@ -78,6 +80,7 @@ namespace DarkTonic.MasterAudio.EditorScripts
             if (GUILayout.Button(new GUIContent("Apply Selected"), EditorStyles.toolbarButton, GUILayout.Width(100)))
             {
                 ApplySelected();
+                EditorGUILayout.EndHorizontal();
                 return;
             }
             GUILayout.Space(10);
@@ -962,6 +965,14 @@ namespace DarkTonic.MasterAudio.EditorScripts
 
             var updatedTime = DateTime.Now.Ticks;
 
+            var localStreamingAssetsPath = Application.streamingAssetsPath;
+
+            var indexOfAssets = Application.streamingAssetsPath.IndexOf("/Assets/");
+            if (indexOfAssets > 0)
+            {
+                localStreamingAssetsPath = Application.streamingAssetsPath.Substring(indexOfAssets + 1);
+            }
+
             foreach (var aPath in filePaths)
             {
                 if (!aPath.EndsWith(".wav", StringComparison.InvariantCultureIgnoreCase)
@@ -973,8 +984,17 @@ namespace DarkTonic.MasterAudio.EditorScripts
                     continue;
                 }
 
+                if (aPath.Contains(localStreamingAssetsPath))
+                {
+                    continue; // stream assets don't have AudioImporters
+                }
+
                 // ReSharper disable once AccessToStaticMemberViaDerivedType
-                var importer = (AudioImporter)AudioImporter.GetAtPath(aPath);
+                var importer = AudioImporter.GetAtPath(aPath) as AudioImporter;
+                if (importer == null)
+                {
+                    continue;
+                }
 
                 // ReSharper disable once UseObjectOrCollectionInitializer
                 AudioImporterSampleSettings settings = importer.defaultSampleSettings;

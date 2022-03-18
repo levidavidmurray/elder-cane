@@ -134,6 +134,7 @@ namespace DarkTonic.MasterAudio {
         private Coroutine _loadResourceFileCoroutine;
         private Coroutine _loadAddressableCoroutine;
         private bool _isUnloadAddressableCoroutineRunning = false;
+        private TransformFollower _ambientFollower;
 
         public class PlaySoundParams {
             public string SoundType;
@@ -197,9 +198,8 @@ namespace DarkTonic.MasterAudio {
             original_volume = VarAudio.volume;
             _audioLoops = VarAudio.loop;
             var c = VarAudio.clip; // pre-warm the clip access
-            var g = GameObj; // pre-warm the game object clip access
 
-            if (c != null || g != null || _isWarmingPlay) { } // to disable the warning for not using it.
+            if (c != null || _isWarmingPlay) { } // to disable the warning for not using it.
 
             if (VarAudio.playOnAwake) {
                 Debug.LogWarning("The 'Play on Awake' checkbox in the Variation named: '" + name +
@@ -209,6 +209,9 @@ namespace DarkTonic.MasterAudio {
 
         // ReSharper disable once UnusedMember.Local
         private void Start() {
+            var g = GameObj; // pre-warm the game object clip access
+            if (g != null) { }
+
             // this code needs to wait for cloning (for weight).
             var theParent = ParentGroup;
             if (theParent == null) {
@@ -216,7 +219,8 @@ namespace DarkTonic.MasterAudio {
                 return;
             }
 
-            var shouldDisableVariation = true;
+            var shouldDisableVariation = !IsPlaying;
+
 #if UNITY_2019_3_OR_NEWER && VIDEO_ENABLED
             if (MasterAudio.IsVideoPlayersGroup(ParentGroup.GameObjectName))
             {
@@ -395,6 +399,7 @@ namespace DarkTonic.MasterAudio {
             LoadStatus = MasterAudio.VariationLoadStatus.None;
             _isStopRequested = false;
             _isWarmingPlay = MasterAudio.IsWarming;
+            _ambientFollower = null;
 
             MaybeCleanupFinishedDelegate();
             _hasStartedEndLinkedGroups = false;
@@ -956,6 +961,21 @@ namespace DarkTonic.MasterAudio {
         }
 
         /*! \cond PRIVATE */
+        public void MoveToAmbientColliderPosition(Vector3 newPosition, TransformFollower follower)
+        {
+            Trans.position = newPosition;
+            _ambientFollower = follower;
+        }
+
+        public void UpdateAudioVariation(TransformFollower transformFollower)
+        {
+            _ambientFollower = transformFollower;
+            if (_ambientFollower != null)
+            {
+                _ambientFollower.UpdateAudioVariation(this);
+            }
+        }
+
         public bool WasTriggeredFromTransform(Transform trans) {
             if (ObjectToFollow == trans || ObjectToTriggerFrom == trans) {
                 return true;
@@ -976,6 +996,16 @@ namespace DarkTonic.MasterAudio {
             return false;
         }
         /*! \endcond */
+
+		
+        /// <summary>
+        /// This property returns you the TransformTracker component being used to position this Variation at closest collider points.
+        /// </summary>
+        public TransformFollower AmbientFollower {
+            get {
+                return _ambientFollower;
+            }
+        }
 
         /// <summary>
         /// This property returns you a lazy-loaded reference to the Unity Distortion Filter FX component.

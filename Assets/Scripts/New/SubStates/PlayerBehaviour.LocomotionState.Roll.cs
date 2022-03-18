@@ -1,5 +1,6 @@
 ﻿using System;
 using Animancer;
+using DarkTonic.MasterAudio;
 using UnityEngine;
 
 namespace New {
@@ -30,10 +31,12 @@ namespace New {
                 }
                 
                 Instance.Animancer.Play(_RollAnim);
+                MasterAudio.PlaySound3DAtTransformAndForget("Roll", Instance.transform);
                 
                 _RollAnim.State.Events.OnEnd = () => {
                     StateMachine.TrySetState(Instance._IdleState);
                 };
+
             }
 
             public override void Update() {

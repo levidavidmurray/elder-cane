@@ -1,6 +1,48 @@
-MASTER AUDIO PLUGIN - By DarkTonic, Inc. (c) 2012-2021
+MASTER AUDIO PLUGIN - By DarkTonic, Inc. (c) 2012-2022
 
 - Code by Brian Hunsaker
+
+Master Audio 2022 released! Version numbers reset.
+-V 1.0.1    - Fixed export problem with MasterAudioReferenceHolder.cs
+
+-V 1.0		- Fixed bug where Variations were not found because of name containing "Clone" for Variations with Weight > 1.
+			- Fixed bug in Unity 2021 where domain not reloading settings broke outside the editor.
+ 			- Fixed bug with calculation of "is too far away to play" Audio.
+			- Fixed bug where Group Polyphony Limit didn't work properly on certain settings.
+			- Fixed bug where after a Variation fade, changing the Master Mixer Volume would set the volume to a percentage of the original pre-fade volume.
+			- Fixed bug: Sound Group Organizer didn't copy Voices field.
+			- Fixed bug: Turning on both "Use Closest Collider Position" and "Follow Caller" for Ambient Sound would make the collider positioning not work.
+			- Fixed bug: Warming sound, if Resource File, would not disable itself after playing during warm up.
+			- Fixed bug: Previewing in edit mode would randomly stop working after 1 minute of inactivity.
+			- Fixed bug: Sound Group Organizer didn't copy any Variations past the first.
+			- Fixed bug: Occlusion would stop raycasting if occluded for more than a couple seconds. Couldn't restore non-occluded sound.
+			- Fixed allocations in Chained Loop code.
+			- Fixed warning with Multiplayer Mirror integration.
+			- Fixed bug with StreamAssets and Bulk Audio Importer (crash).
+			- Fixed bug where EventSounds OnEnable event wouldn't play a sound on first frame.
+			- Fixed bug where SongEnded event would no longer fire on PlaylistController.
+			- Fixed obscure bug with unpause on PlaylistController causing the music to stop.
+			- Fixed bug in Unity 2021 where Bulk Audio Importer spammed errors on scanning.
+			- Fixed bug in EventSounds where Playlist events wouldn't play during OnEnable. Now they play during "Start" instead if so configured, since PlaylistController is ready by then.
+			- Fixed bug where Playmaker Custom Actions would spam the Console when editor stopped or Scene unloaded sometimes.
+			- Fixed asmdef files package so that they only work in the editor.
+			- Added integration with all Opsive plugins!
+			- Changed Voices / Weight label to have a slash instead of parentheses. Clearer purpose.
+			- Changed "Song Start Time Mode" on songs in a Playlist to "Begin Song Time Mode".
+			- Added "Multiplayer Capability" checkbox to the Welcome Window, off by default. Check the box to get multiplayer versions of Event Sounds, and the MechanimState scripts.
+			- Added new asmdef packages for users using Addressables and asmdefs. The existing ones didn't compile if you turned on Addressable support.
+			- Added ability to specify a Custom Event to fire at the end of fades/pitch glides in Event Sounds for: Pitch Glide in "Play Sound", Sound Group Fade To Volume, Sound Group Glide By Pitch, Bus Fade To Volume, Bus Glide By Pitch.
+			- Added missing "Use Clip Age Priority" checkbox to Dynamic Sound Groups.
+			- Added "Section" option for "Begin Song Time Mode" for Songs in Playlist Controller. This allows you to set a loopable section of a song. You set the start and end time in seconds. No more issues identified. Issues fixed with it:
+				-There's a hiccup when you change or queue to a section loop song on gapless.
+				-Unpause with Jukebox used to work?
+				-Progress of song in Jukebox should not move during pause. 
+				-Seamless scheduling of looped track.
+				-Crossfade aborts the non-section loop song early by the length of the crossfade (I think it's scheduling the section loop clip and cutting off the old clip).
+				-Must work when queued
+				-Section loop must work on gapless
+
+Master Audio / Master Audio 2021 releases ended.
 
 -V 2020.3.8 - Fixed a bunch of unintentional allocations for zero Garbage Collection.
 			- Fixed Bus Solo logic, it was adding the same Bus without checking if it was in the list. Could result in weird behavior.

@@ -1,4 +1,5 @@
 ﻿using System;
+using DarkTonic.MasterAudio;
 using UnityEngine;
 
 namespace New {
@@ -35,6 +36,8 @@ namespace New {
                 _InitialJumpVelocity = (2 * _MaxJumpHeight) / timeToApex;
                 
                 Instance._InAirState.Gravity = (-2 * _MaxJumpHeight) / (timeToApex * timeToApex);
+
+                MasterAudio.PlaySound3DAtTransformAndForget("Jump", Instance.transform);
             }
 
             public override void UpdateVelocity(ref Vector3 currentVelocity, float deltaTime) {
