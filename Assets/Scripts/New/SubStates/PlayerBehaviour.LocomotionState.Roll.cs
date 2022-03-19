@@ -60,7 +60,6 @@ namespace New {
                         1f - Mathf.Exp(-Instance.StableMovementSharpness * deltaTime)
                 );
                 
-                print($"targetRollSpeed: {targetRollSpeed}, velocity: {currentVelocity.magnitude}");
             }
 
             /************************************************************************************************************************/

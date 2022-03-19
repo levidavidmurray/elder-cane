@@ -5,14 +5,26 @@ using UnityEngine.InputSystem;
 namespace EC.Control {
     public class PlayerInputHandler : MonoBehaviour {
 
+        public enum InputActionEvent {
+            Started,
+            Performed,
+            Canceled,
+            All
+        }
+
         public static PlayerInputHandler Instance;
+        
+        /************************************************************************************************************************/
         
         #region Custom Callbacks
 
         public Action<InputAction.CallbackContext> OnResetCb;
         public Action<InputAction.CallbackContext> OnLockTargetCb;
+        public Action<Vector2> OnTargetSnapCb;
         
         #endregion
+        
+        /************************************************************************************************************************/
         
         public Vector2 MoveInput { get; private set; }
         public Vector2 LookInput { get; private set; }
@@ -23,15 +35,27 @@ namespace EC.Control {
         public bool AttackLightInput { get; private set; }
         public bool AttackLightInputStop { get; private set; }
         public bool AttackHeavyInput { get; private set; }
+        
+        /************************************************************************************************************************/
 
         [SerializeField] private float inputHoldTime = 0.2f;
+        [SerializeField] private float snapDirectionMagnitudeThreshold = 0.8f;
+        [SerializeField] private float snapDirectionTimeLimit = 0.2f;
+        [SerializeField] private float snapDirectionRepeatDotThreshold = 0.1f;
+        
+        /************************************************************************************************************************/
 
         private float jumpInputStartTime;
-        private float rollInputStartTime;
         private float attackInputStartTime;
+        private float snapDirectionStartTime;
+        private Vector2 snapDirection;
+        
+        /************************************************************************************************************************/
 
         private PlayerActions _PlayerActions;
         public PlayerActions.GameActions GameActions { get; private set; }
+        
+        /************************************************************************************************************************/
 
         private void Awake() {
             if (Instance != null) {
@@ -43,26 +67,11 @@ namespace EC.Control {
 
         private void Update() {
             CheckAttackInputHoldTime();
-            CheckJumpInputHoldTime();
         }
-
-        private void InitializeInputActions() {
-            _PlayerActions = new PlayerActions();
-            GameActions = _PlayerActions.Game;
-            
-            EnableAll(GameActions.Reset, OnReset);
-            EnableAll(GameActions.Move, OnMove);
-            EnableAll(GameActions.Jump, OnJump);
-            EnableAll(GameActions.Sprint, OnSprint);
-            EnableAll(GameActions.Roll, OnRoll);
-        }
-
-        private void EnableAll(InputAction action, Action<InputAction.CallbackContext> actionCb) {
-            action.Enable();
-            action.started += actionCb;
-            action.performed += actionCb;
-            action.canceled += actionCb;
-        }
+        
+        /************************************************************************************************************************/
+        
+        #region Input Action Callbacks
 
         public void OnMove(InputAction.CallbackContext context) {
             MoveInput = context.ReadValue<Vector2>();
@@ -98,7 +107,6 @@ namespace EC.Control {
         public void OnRoll(InputAction.CallbackContext context) {
             if (context.performed) {
                 RollInput = true;
-                rollInputStartTime = Time.time;
             }
         }
 
@@ -122,27 +130,80 @@ namespace EC.Control {
         public void OnLockTarget(InputAction.CallbackContext context) {
             OnLockTargetCb?.Invoke(context);
         }
+        
+        public void OnTargetSnapDirection(InputAction.CallbackContext context) {
+            var snapDir = context.ReadValue<Vector2>();
+            
+            if (context.started) {
+                if (Vector2.Dot(snapDir, snapDirection) >= 1 - snapDirectionRepeatDotThreshold) {
+                    print($"Ignoring similar direction");
+                    return;
+                }
+                
+                snapDirectionStartTime = Time.time;
+                snapDirection = snapDir;
+            }
+            
+            print($"[OnTargetSnapDirection] {snapDir} started: {context.started}, performed: {context.performed}, canceled: {context.canceled}");
+
+
+            if (snapDir.magnitude < snapDirectionMagnitudeThreshold) return;
+
+            if (Time.time - snapDirectionStartTime >= snapDirectionTimeLimit) return;
+            
+            OnTargetSnapCb?.Invoke(snapDir);
+        }
+        
+        #endregion
+        
+        /************************************************************************************************************************/
 
         public void UseJumpInput() => JumpInput = false;
         public void UseRollInput() => RollInput = false;
         public void UseAttackLightInput() => AttackLightInput = false;
+        
+        /************************************************************************************************************************/
+
+        private void InitializeInputActions() {
+            _PlayerActions = new PlayerActions();
+            GameActions = _PlayerActions.Game;
+            
+            EnableAction(GameActions.Reset, OnReset);
+            EnableAction(GameActions.Move, OnMove);
+            EnableAction(GameActions.Look, OnLook);
+            EnableAction(GameActions.Jump, OnJump);
+            EnableAction(GameActions.Sprint, OnSprint);
+            EnableAction(GameActions.Roll, OnRoll);
+            EnableAction(GameActions.LockTarget, OnLockTarget, InputActionEvent.Performed);
+            EnableAction(GameActions.TargetSnapDirection, OnTargetSnapDirection);
+        }
+        
+        private void EnableAction(InputAction action, Action<InputAction.CallbackContext> actionCb, InputActionEvent actionEvent = InputActionEvent.All) {
+            if (!action.enabled)
+                action.Enable();
+            
+            switch (actionEvent) {
+                case InputActionEvent.Started:
+                    action.started += actionCb;
+                    break;
+                case InputActionEvent.Performed:
+                    action.performed += actionCb;
+                    break;
+                case InputActionEvent.Canceled:
+                    action.canceled += actionCb;
+                    break;
+                default:
+                    EnableAction(action, actionCb, InputActionEvent.Started);
+                    EnableAction(action, actionCb, InputActionEvent.Performed);
+                    EnableAction(action, actionCb, InputActionEvent.Canceled);
+                    break;
+            }
+        }
 
         private void CheckAttackInputHoldTime() {
             if (Time.time - attackInputStartTime >= inputHoldTime) {
                 AttackLightInput = false;
                 AttackHeavyInput = false;
-            }
-        }
-
-        private void CheckJumpInputHoldTime() {
-            // if (Time.time - jumpInputStartTime >= inputHoldTime) {
-            //     JumpInput = false;
-            // }
-        }
-
-        private void CheckRollInputHoldTime() {
-            if (Time.time - rollInputStartTime >= inputHoldTime) {
-                RollInput = false;
             }
         }
         

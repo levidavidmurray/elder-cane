@@ -1,6 +1,7 @@
 ﻿using System;
 using Animancer;
 using Animancer.FSM;
+using Cinemachine;
 using EC.Control;
 using KinematicCharacterController;
 using UnityEngine;
@@ -20,10 +21,17 @@ namespace New {
         public KinematicCharacterMotor Motor;
         public PlayerInputHandler InputHandler;
         public AnimancerComponent Animancer;
-        public Transform CameraTransform;
         public OrientationMethodType OrientationMethod;
         public float OrientationSharpness = 10f;
         public float StableMovementSharpness = 15f;
+        // Camera
+        public Transform CameraTransform;
+        public CinemachineFreeLook FreeLookCamera;
+        public CinemachineVirtualCamera LockedCamera;
+        public CinemachineTargetGroup TargetLockGroup;
+        
+        // Debugging
+        public Transform TEMP_testTarget;
         
         /************************************************************************************************************************/
         
@@ -63,6 +71,7 @@ namespace New {
         
         private Vector3 _SpawnPosition;
         private bool _FreezeVelocityThisTick;
+        private Transform _LockedTarget;
 
         /************************************************************************************************************************/
 
@@ -77,12 +86,9 @@ namespace New {
             Instance = this;
             _SpawnPosition = transform.position;
             LocomotionStateMachine.ForceSetState(_IdleState);
-
-            InputHandler.OnResetCb += _ => {
-                Motor.SetPosition(_SpawnPosition);
-                _FreezeVelocityThisTick = true;
-                LocomotionStateMachine.ForceSetState(_IdleState);
-            };
+            TargetLockGroup.AddMember(transform, 1f, 2f);
+            
+            InitializeInputCallbacks();
         }
 
         private void Start() {
@@ -203,6 +209,37 @@ namespace New {
         /************************************************************************************************************************/
         
         #region Helper Functions
+
+        private void InitializeInputCallbacks() {
+
+            InputHandler.OnLockTargetCb += _ => {
+                if (!_LockedTarget)
+                    LockTarget(TEMP_testTarget);
+                else
+                    UnlockTarget(_LockedTarget);
+            };
+            
+            // Debugging (Reset position)
+            InputHandler.OnResetCb += _ => {
+                Motor.SetPosition(_SpawnPosition);
+                _FreezeVelocityThisTick = true;
+                LocomotionStateMachine.ForceSetState(_IdleState);
+            };
+        }
+
+        private void LockTarget(Transform lockTarget) {
+            _LockedTarget = lockTarget;
+            TargetLockGroup.AddMember(lockTarget, 1f, 2f);
+            LockedCamera.Priority = 11;
+            OrientationMethod = OrientationMethodType.TowardsCamera;
+        }
+
+        private void UnlockTarget(Transform lockTarget) {
+            _LockedTarget = null;
+            TargetLockGroup.RemoveMember(lockTarget);
+            LockedCamera.Priority = 9;
+            OrientationMethod = OrientationMethodType.TowardsMovement;
+        }
         
         private void UpdateBlackboard() {
             MoveInput = InputHandler.MoveInput;
