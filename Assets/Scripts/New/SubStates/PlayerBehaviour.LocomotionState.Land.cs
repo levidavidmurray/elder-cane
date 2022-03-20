@@ -31,6 +31,10 @@ namespace New {
             public override void OnEnterState() {
                 base.OnEnterState();
 
+                if (Instance.MoveInput.magnitude == 0) {
+                    Instance._FreezeVelocityThisTick = true;
+                }
+                
                 if (!_IsInitialized) {
                     Initialize();
                 }

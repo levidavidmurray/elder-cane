@@ -20,7 +20,7 @@ namespace EC.Control {
 
         public Action<InputAction.CallbackContext> OnResetCb;
         public Action<InputAction.CallbackContext> OnLockTargetCb;
-        public Action<Vector2> OnTargetSnapCb;
+        // public Action<Vector2> OnTargetSnapCb;
         
         #endregion
         
@@ -39,9 +39,9 @@ namespace EC.Control {
         /************************************************************************************************************************/
 
         [SerializeField] private float inputHoldTime = 0.2f;
-        [SerializeField] private float snapDirectionMagnitudeThreshold = 0.8f;
-        [SerializeField] private float snapDirectionTimeLimit = 0.2f;
-        [SerializeField] private float snapDirectionRepeatDotThreshold = 0.1f;
+        // [SerializeField] private float snapDirectionMagnitudeThreshold = 0.8f;
+        // [SerializeField] private float snapDirectionTimeLimit = 0.2f;
+        // [SerializeField] private float snapDirectionRepeatDotThreshold = 0.1f;
         
         /************************************************************************************************************************/
 
@@ -49,6 +49,7 @@ namespace EC.Control {
         private float attackInputStartTime;
         private float snapDirectionStartTime;
         private Vector2 snapDirection;
+        private bool snapAttempt;
         
         /************************************************************************************************************************/
 
@@ -67,6 +68,7 @@ namespace EC.Control {
 
         private void Update() {
             CheckAttackInputHoldTime();
+            // CheckTargetSnapDirectionInput();
         }
         
         /************************************************************************************************************************/
@@ -131,28 +133,21 @@ namespace EC.Control {
             OnLockTargetCb?.Invoke(context);
         }
         
-        public void OnTargetSnapDirection(InputAction.CallbackContext context) {
-            var snapDir = context.ReadValue<Vector2>();
-            
-            if (context.started) {
-                if (Vector2.Dot(snapDir, snapDirection) >= 1 - snapDirectionRepeatDotThreshold) {
-                    print($"Ignoring similar direction");
-                    return;
-                }
-                
-                snapDirectionStartTime = Time.time;
-                snapDirection = snapDir;
-            }
-            
-            print($"[OnTargetSnapDirection] {snapDir} started: {context.started}, performed: {context.performed}, canceled: {context.canceled}");
-
-
-            if (snapDir.magnitude < snapDirectionMagnitudeThreshold) return;
-
-            if (Time.time - snapDirectionStartTime >= snapDirectionTimeLimit) return;
-            
-            OnTargetSnapCb?.Invoke(snapDir);
-        }
+        // TODO: Get this to work
+        // public void OnTargetSnapDirection(InputAction.CallbackContext context) {
+        //     var snapDir = context.ReadValue<Vector2>();
+        //     
+        //     if (snapDir.magnitude < snapDirectionMagnitudeThreshold) return;
+        //     
+        //     if (Vector2.Dot(snapDir, snapDirection) >= 1 - snapDirectionRepeatDotThreshold) {
+        //         print($"Ignoring similar direction");
+        //         return;
+        //     }
+        //     
+        //     snapAttempt = true;
+        //     snapDirectionStartTime = Time.time;
+        //     snapDirection = snapDir;
+        // }
         
         #endregion
         
@@ -175,7 +170,7 @@ namespace EC.Control {
             EnableAction(GameActions.Sprint, OnSprint);
             EnableAction(GameActions.Roll, OnRoll);
             EnableAction(GameActions.LockTarget, OnLockTarget, InputActionEvent.Performed);
-            EnableAction(GameActions.TargetSnapDirection, OnTargetSnapDirection);
+            // EnableAction(GameActions.TargetSnapDirection, OnTargetSnapDirection);
         }
         
         private void EnableAction(InputAction action, Action<InputAction.CallbackContext> actionCb, InputActionEvent actionEvent = InputActionEvent.All) {
@@ -206,6 +201,23 @@ namespace EC.Control {
                 AttackHeavyInput = false;
             }
         }
+
+        // TODO: Get this to work
+        // private void CheckTargetSnapDirectionInput() {
+        //     if (Time.time - snapDirectionStartTime > snapDirectionTimeLimit) {
+        //         snapAttempt = false;
+        //         snapDirection = Vector2.zero;
+        //         return;
+        //     }
+        //     
+        //     if (!snapAttempt) return;
+        //     
+        //     if (GameActions.Look.ReadValue<Vector2>().magnitude > 0) return;
+        //
+        //     OnTargetSnapCb?.Invoke(snapDirection);
+        //     snapAttempt = false;
+        //     snapDirection = Vector2.zero;
+        // }
         
     }
 }

@@ -29,7 +29,7 @@ namespace New {
         public CinemachineFreeLook FreeLookCamera;
         public CinemachineVirtualCamera LockedCamera;
         public CinemachineTargetGroup TargetLockGroup;
-        
+
         // Debugging
         public Transform TEMP_testTarget;
         
@@ -72,6 +72,7 @@ namespace New {
         private Vector3 _SpawnPosition;
         private bool _FreezeVelocityThisTick;
         private Transform _LockedTarget;
+        private CameraViewTargetSelector _CameraViewTargetSelector;
 
         /************************************************************************************************************************/
 
@@ -87,6 +88,7 @@ namespace New {
             _SpawnPosition = transform.position;
             LocomotionStateMachine.ForceSetState(_IdleState);
             TargetLockGroup.AddMember(transform, 1f, 2f);
+            _CameraViewTargetSelector = GetComponent<CameraViewTargetSelector>();
             
             InitializeInputCallbacks();
         }
@@ -146,6 +148,10 @@ namespace New {
         /// </summary>
         public void UpdateVelocity(ref Vector3 currentVelocity, float deltaTime) {
             LocomotionStateMachine.CurrentState.UpdateVelocity(ref currentVelocity, deltaTime);
+
+            if (currentVelocity.magnitude > 0) {
+                print($"State: {LocomotionStateMachine.CurrentState.GetType().Name}, Velocity: {currentVelocity}");
+            }
 
             if (_FreezeVelocityThisTick) {
                 currentVelocity = Vector3.zero;
@@ -213,10 +219,12 @@ namespace New {
         private void InitializeInputCallbacks() {
 
             InputHandler.OnLockTargetCb += _ => {
-                if (!_LockedTarget)
-                    LockTarget(TEMP_testTarget);
-                else
+                if (!_LockedTarget) {
+                    LockTarget(_CameraViewTargetSelector.GetTargetToLock());
+                }
+                else {
                     UnlockTarget(_LockedTarget);
+                }
             };
             
             // Debugging (Reset position)
@@ -228,6 +236,8 @@ namespace New {
         }
 
         private void LockTarget(Transform lockTarget) {
+            if (!lockTarget) return;
+            
             _LockedTarget = lockTarget;
             TargetLockGroup.AddMember(lockTarget, 1f, 2f);
             LockedCamera.Priority = 11;

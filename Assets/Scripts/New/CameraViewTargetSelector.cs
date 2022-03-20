@@ -6,12 +6,18 @@ using UnityEngine;
 namespace New {
     public class CameraViewTargetSelector : MonoBehaviour {
         
+        /************************************************************************************************************************/
+        
         public Camera ViewCamera;
+        public LayerMask ObstructionMask;
         
         /************************************************************************************************************************/
 
+        public Transform TargetToLock { get; private set; }
+        
+        /************************************************************************************************************************/
+        
         private List<Transform> _PossibleTargets = new();
-        private Transform _TargetToLock;
         private PlayerInputHandler _InputHandler;
         
         /************************************************************************************************************************/
@@ -19,9 +25,9 @@ namespace New {
         private void Awake() {
             _InputHandler = GetComponent<PlayerInputHandler>();
 
-            _InputHandler.OnTargetSnapCb += snapDir => {
-                print($"TARGET SNAP: {snapDir}");
-            };
+            // _InputHandler.OnTargetSnapCb += snapDir => {
+            //     print($"TARGET SNAP: {snapDir}");
+            // };
         }
 
         private void Update() {
@@ -29,13 +35,10 @@ namespace New {
             var camForward = ViewCamera.transform.forward;
             Debug.DrawLine(camPos, camPos + (camForward * 10f), Color.red);
             
-            _TargetToLock = GetTargetToLock();
-
-            if (_TargetToLock) {
-                var targetPos = _TargetToLock.position;
+            if (TargetToLock) {
+                var targetPos = TargetToLock.position;
                 Debug.DrawLine(camPos, targetPos, Color.green);
             }
-            
         }
         
         /************************************************************************************************************************/
@@ -47,10 +50,8 @@ namespace New {
         public void RemoveTarget(Transform target) {
             _PossibleTargets.Remove(target);
         }
-        
-        /************************************************************************************************************************/
 
-        private Transform GetTargetToLock() {
+        public Transform GetTargetToLock() {
             var camTransform = ViewCamera.transform;
 
             Transform targetToLock = null;
@@ -74,7 +75,21 @@ namespace New {
                 print($"TargetToLock: {targetToLock.name} LookPercentage: {highestLookPercentage}");
             }
 
+            if (TargetIsObstructed(targetToLock)) return null;
+
             return targetToLock;
+        }
+        
+        /************************************************************************************************************************/
+
+        private bool TargetIsObstructed(Transform target) {
+            var camPos = ViewCamera.transform.position;
+            var dirToTarget = camPos - target.position;
+            RaycastHit hit;
+            bool didHit = Physics.Raycast(camPos, dirToTarget, out hit, dirToTarget.magnitude, ObstructionMask,
+                QueryTriggerInteraction.Ignore);
+
+            return didHit;
         }
         
     }
