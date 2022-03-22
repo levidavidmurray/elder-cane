@@ -88,15 +88,6 @@ namespace EC.Control {
                 JumpInput = true;
             if (context.canceled)
                 JumpInput = false;
-            // if (context.started) {
-            //     JumpInput = true;
-            //     JumpInputStop = false;
-            //     jumpInputStartTime = Time.time;
-            // }
-            //
-            // if (context.canceled) {
-            //     JumpInputStop = true;
-            // }
         }
 
         public void OnSprint(InputAction.CallbackContext context) {
@@ -119,7 +110,7 @@ namespace EC.Control {
                 attackInputStartTime = Time.time;
                 return;
             }
-
+            
             if (context.performed || context.canceled) {
                 AttackLightInputStop = true;
             }
@@ -170,6 +161,7 @@ namespace EC.Control {
             EnableAction(GameActions.Sprint, OnSprint);
             EnableAction(GameActions.Roll, OnRoll);
             EnableAction(GameActions.LockTarget, OnLockTarget, InputActionEvent.Performed);
+            EnableAction(GameActions.AttackLight, OnAttackLight);
             // EnableAction(GameActions.TargetSnapDirection, OnTargetSnapDirection);
         }
         

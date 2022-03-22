@@ -1,26 +1,33 @@
-﻿using Animancer;
-using Animancer.FSM;
+﻿using System;
+using UnityEngine;
 
 namespace New {
     partial class PlayerBehaviour {
-        
-        public abstract class ActionState : State {
+
+        [Serializable]
+        public class EmptyState : ActionState {
             
             /************************************************************************************************************************/
             
-            protected StateMachine<ActionState> StateMachine;
-            protected AnimancerLayer AnimLayer;
+            [SerializeField] private float _FadeSpeed = 0.25f;
             
             /************************************************************************************************************************/
 
             public override void OnEnterState() {
                 base.OnEnterState();
-                StateMachine = Instance.ActionStateMachine;
-                AnimLayer = Instance.Animancer.Layers[_ActionLayer];
-                
-                AnimLayer.StartFade(1);
+
+                AnimLayer.StartFade(0, _FadeSpeed);
             }
             
+            public override void Update() {
+                base.Update();
+
+                if (Instance.IsAttacking) {
+                    StateMachine.TrySetState(Instance._AttackState);
+                }
+                
+            }
+
             /************************************************************************************************************************/
             
         }

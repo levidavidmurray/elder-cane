@@ -8,7 +8,7 @@ namespace New {
         public class IdleState : GroundedState {
             
             [SerializeField] private float _FadeSpeed = 0.25f;
-            [SerializeField] private AnimationClip _IdleClip;
+            [SerializeField] public AnimationClip _IdleClip;
             
             /************************************************************************************************************************/
 

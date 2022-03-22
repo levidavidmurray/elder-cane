@@ -32,6 +32,8 @@ public class CharacterAnimationListener : MonoBehaviour {
     }
 
     // Animation Event
+    // footIndex 0 -> Left Foot
+    // footIndex 1 -> Right Foot
     public void OnFootStep(int footIndex) {
         if (footIndex == _LastFootIndexPlayed) return;
         MasterAudio.PlaySound3DAtTransformAndForget("FootstepsRegular", transform);

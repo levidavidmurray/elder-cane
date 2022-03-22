@@ -24,15 +24,14 @@ namespace New {
         public OrientationMethodType OrientationMethod;
         public float OrientationSharpness = 10f;
         public float StableMovementSharpness = 15f;
+        public AvatarMask ActionMask;
+        
         // Camera
         public Transform CameraTransform;
         public Transform CameraTarget;
         public CinemachineFreeLook FreeLookCamera;
         public CinemachineVirtualCamera LockedCamera;
         public CinemachineTargetGroup TargetLockGroup;
-
-        // Debugging
-        public Transform TEMP_testTarget;
         
         /************************************************************************************************************************/
         
@@ -46,6 +45,8 @@ namespace New {
         public bool IsJumping { get; private set; }
         public bool IsSprinting { get; private set; }
         public bool IsRolling { get; private set; }
+        public bool IsAttacking { get; private set; }
+        public bool IsTargetLocked { get; private set; }
         
         #endregion
         
@@ -62,8 +63,11 @@ namespace New {
         [SerializeField] private InAirState _InAirState;
         [SerializeField] private LandState _LandState;
         [SerializeField] private RollState _RollState;
+
+        [Foldout("Action States", styled = true)]
+        [SerializeField] private EmptyState _EmptyState;
+        [SerializeField] private AttackState _AttackState;
         
-        // [Foldout("Action States", styled = true)]
         private readonly StateMachine<ActionState> ActionStateMachine = new();
         
         #endregion
@@ -74,6 +78,9 @@ namespace New {
         private bool _FreezeVelocityThisTick;
         private Transform _LockedTarget;
         private CameraViewTargetSelector _CameraViewTargetSelector;
+
+        public const int _BaseLayer = 0;
+        public const int _ActionLayer = 1;
 
         /************************************************************************************************************************/
 
@@ -90,24 +97,39 @@ namespace New {
             _SpawnPosition = transform.position;
             _CameraViewTargetSelector = GetComponent<CameraViewTargetSelector>();
             
-            LocomotionStateMachine.ForceSetState(_IdleState);
             TargetLockGroup.AddMember(CameraTarget, 1f, 2f);
+            
+            Animancer.Layers[_ActionLayer].SetMask(ActionMask);
+            Animancer.Layers[_ActionLayer].SetDebugName("Action Layer");
             
             InitializeInputCallbacks();
         }
 
         private void Start() {
             Motor.CharacterController = this;
+            
+            LocomotionStateMachine.ForceSetState(_IdleState);
+            ActionStateMachine.ForceSetState(_EmptyState);
         }
 
         private void Update()
         {
             UpdateBlackboard();
             LocomotionStateMachine.CurrentState.Update();
+            ActionStateMachine.CurrentState.Update();
         }
 
         private void FixedUpdate() {
             LocomotionStateMachine.CurrentState.FixedUpdate();
+            ActionStateMachine.CurrentState.FixedUpdate();
+        }
+
+        private void LateUpdate() {
+            
+            // Camera Stuff
+            float delta = Time.fixedDeltaTime;
+            CameraHandler.Instance.FollowTarget(delta);
+            CameraHandler.Instance.HandleCameraRotation(delta, InputHandler.LookInput);
         }
 
         #endregion
@@ -115,6 +137,7 @@ namespace New {
         /************************************************************************************************************************/
 
         #region Kinematic Character Controller
+        
         /// <summary>
         /// (Called by KinematicCharacterMotor during its update cycle)
         /// This is called before the character begins its movement update
@@ -152,9 +175,9 @@ namespace New {
         public void UpdateVelocity(ref Vector3 currentVelocity, float deltaTime) {
             LocomotionStateMachine.CurrentState.UpdateVelocity(ref currentVelocity, deltaTime);
 
-            if (currentVelocity.magnitude > 0) {
-                print($"State: {LocomotionStateMachine.CurrentState.GetType().Name}, Velocity: {currentVelocity}");
-            }
+            // if (currentVelocity.magnitude > 0) {
+            //     print($"State: {LocomotionStateMachine.CurrentState.GetType().Name}, Velocity: {currentVelocity}");
+            // }
 
             if (_FreezeVelocityThisTick) {
                 currentVelocity = Vector3.zero;
@@ -212,6 +235,11 @@ namespace New {
         public void OnEnterRollState(GroundedState state) {
             InputHandler.UseRollInput();
         }
+
+        public void ResetOrientationMethod() {
+            OrientationMethod =
+                IsTargetLocked ? OrientationMethodType.TowardsCamera : OrientationMethodType.TowardsMovement;
+        }
         
         #endregion
         
@@ -223,7 +251,8 @@ namespace New {
 
             InputHandler.OnLockTargetCb += _ => {
                 if (!_LockedTarget) {
-                    LockTarget(_CameraViewTargetSelector.GetTargetToLock());
+                    CameraHandler.Instance.HandleLockOn();
+                    LockTarget(CameraHandler.Instance.NearestLockOnTarget);
                 }
                 else {
                     UnlockTarget(_LockedTarget);
@@ -242,16 +271,18 @@ namespace New {
             if (!lockTarget) return;
             
             _LockedTarget = lockTarget;
-            TargetLockGroup.AddMember(lockTarget, 1f, 2f);
-            LockedCamera.Priority = 11;
-            OrientationMethod = OrientationMethodType.TowardsCamera;
+            CameraHandler.Instance.CurrentLockOnTarget = lockTarget;
+            // TargetLockGroup.AddMember(lockTarget, 1f, 2f);
+            // LockedCamera.Priority = 11;
+            // OrientationMethod = OrientationMethodType.TowardsCamera;
         }
 
         private void UnlockTarget(Transform lockTarget) {
             _LockedTarget = null;
-            LockedCamera.Priority = 9;
-            OrientationMethod = OrientationMethodType.TowardsMovement;
-            TargetLockGroup.RemoveMember(lockTarget);
+            CameraHandler.Instance.ClearLockOnTargets();
+            // LockedCamera.Priority = 9;
+            // OrientationMethod = OrientationMethodType.TowardsMovement;
+            // TargetLockGroup.RemoveMember(lockTarget);
         }
         
         private void UpdateBlackboard() {
@@ -259,6 +290,8 @@ namespace New {
             IsJumping = InputHandler.JumpInput;
             IsSprinting = InputHandler.SprintInput;
             IsRolling = InputHandler.RollInput;
+            IsAttacking = InputHandler.AttackLightInput;
+            IsTargetLocked = _LockedTarget != null;
             
             Vector3 cameraPlanarDirection = Vector3.zero;
             MoveInputVector = CalculateMoveInputVector(MoveInput, ref cameraPlanarDirection);
