@@ -26,6 +26,7 @@ namespace New {
         public float StableMovementSharpness = 15f;
         // Camera
         public Transform CameraTransform;
+        public Transform CameraTarget;
         public CinemachineFreeLook FreeLookCamera;
         public CinemachineVirtualCamera LockedCamera;
         public CinemachineTargetGroup TargetLockGroup;
@@ -85,10 +86,12 @@ namespace New {
         private void Awake() {
             AnimancerUtilities.Assert(Instance == null, $"The {nameof(PlayerBehaviour)}.{nameof(Instance)} is already assigned.");
             Instance = this;
+            
             _SpawnPosition = transform.position;
-            LocomotionStateMachine.ForceSetState(_IdleState);
-            TargetLockGroup.AddMember(transform, 1f, 2f);
             _CameraViewTargetSelector = GetComponent<CameraViewTargetSelector>();
+            
+            LocomotionStateMachine.ForceSetState(_IdleState);
+            TargetLockGroup.AddMember(CameraTarget, 1f, 2f);
             
             InitializeInputCallbacks();
         }
@@ -246,9 +249,9 @@ namespace New {
 
         private void UnlockTarget(Transform lockTarget) {
             _LockedTarget = null;
-            TargetLockGroup.RemoveMember(lockTarget);
             LockedCamera.Priority = 9;
             OrientationMethod = OrientationMethodType.TowardsMovement;
+            TargetLockGroup.RemoveMember(lockTarget);
         }
         
         private void UpdateBlackboard() {
