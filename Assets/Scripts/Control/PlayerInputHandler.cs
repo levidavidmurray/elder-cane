@@ -35,6 +35,8 @@ namespace EC.Control {
         public bool AttackLightInput { get; private set; }
         public bool AttackLightInputStop { get; private set; }
         public bool AttackHeavyInput { get; private set; }
+        public bool TargetSnapLeftInput { get; private set; }
+        public bool TargetSnapRightInput { get; private set; }
         
         /************************************************************************************************************************/
 
@@ -147,6 +149,8 @@ namespace EC.Control {
         public void UseJumpInput() => JumpInput = false;
         public void UseRollInput() => RollInput = false;
         public void UseAttackLightInput() => AttackLightInput = false;
+        public void UseTargetSnapLeftInput() => TargetSnapLeftInput = false;
+        public void UseTargetSnapRightInput() => TargetSnapRightInput = false;
         
         /************************************************************************************************************************/
 
@@ -162,6 +166,8 @@ namespace EC.Control {
             EnableAction(GameActions.Roll, OnRoll);
             EnableAction(GameActions.LockTarget, OnLockTarget, InputActionEvent.Performed);
             EnableAction(GameActions.AttackLight, OnAttackLight);
+            EnableAction(GameActions.LockOnTargetLeft, _ => TargetSnapLeftInput = true, InputActionEvent.Performed);
+            EnableAction(GameActions.LockOnTargetRight, _ => TargetSnapRightInput = true, InputActionEvent.Performed);
             // EnableAction(GameActions.TargetSnapDirection, OnTargetSnapDirection);
         }
         

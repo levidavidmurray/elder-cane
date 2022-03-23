@@ -69,10 +69,19 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "TargetSnapDirection",
-                    "type": "Value",
+                    "name": "LockOnTargetLeft",
+                    "type": "Button",
                     "id": "0bba1974-575c-43eb-bc62-59a619e5e365",
-                    "expectedControlType": "Vector2",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "LockOnTargetRight",
+                    "type": "Button",
+                    "id": "3d717493-e793-46f6-a42c-a574ab741db0",
+                    "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
@@ -333,11 +342,22 @@
                 {
                     "name": "",
                     "id": "35269725-c169-4acf-8ed5-a790242f6bc0",
-                    "path": "<Gamepad>/rightStick",
-                    "interactions": "",
-                    "processors": "",
+                    "path": "<Gamepad>/rightStick/left",
+                    "interactions": "Tap",
+                    "processors": "AxisDeadzone",
                     "groups": "Gamepad",
-                    "action": "TargetSnapDirection",
+                    "action": "LockOnTargetLeft",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "d9ec3d67-bce6-4eba-9c28-ee61547ebab6",
+                    "path": "<Gamepad>/rightStick/right",
+                    "interactions": "Tap",
+                    "processors": "AxisDeadzone",
+                    "groups": "Gamepad",
+                    "action": "LockOnTargetRight",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

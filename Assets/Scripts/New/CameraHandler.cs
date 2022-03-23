@@ -21,6 +21,8 @@ namespace New {
         public float _MaxLockOnDist = 30f;
 
         public Transform CurrentLockOnTarget;
+        public Transform LeftLockTarget;
+        public Transform RightLockTarget;
         public bool IsLockedOn => CurrentLockOnTarget != null;
 
         private Transform _MyTransform;
@@ -89,6 +91,8 @@ namespace New {
 
         public void HandleLockOn() {
             float shortestDistance = Mathf.Infinity;
+            float shortestDistanceLeftTarget = Mathf.Infinity;
+            float shortestDistanceRightTarget = Mathf.Infinity;
 
             Collider[] colliders = Physics.OverlapSphere(_TargetTransform.position, 26);
 
@@ -109,9 +113,27 @@ namespace New {
 
             for (int i = 0; i < _AvailableTargets.Count; i++) {
                 float distFromTarget = Vector3.Distance(_TargetTransform.position, _AvailableTargets[i].position);
+                
                 if (distFromTarget < shortestDistance) {
                     shortestDistance = distFromTarget;
                     NearestLockOnTarget = _AvailableTargets[i];
+                }
+
+                if (IsLockedOn) {
+                    var target = _AvailableTargets[i];
+                    Vector3 relativeTargetPos = CurrentLockOnTarget.InverseTransformPoint(target.position);
+                    float distFromLeftTarget = CurrentLockOnTarget.position.x - target.position.x;
+                    float distFromRightTarget = CurrentLockOnTarget.position.x + target.position.x;
+
+                    if (relativeTargetPos.x > 0f && distFromLeftTarget < shortestDistanceLeftTarget) {
+                        shortestDistanceLeftTarget = distFromLeftTarget;
+                        LeftLockTarget = _AvailableTargets[i];
+                    }
+                    
+                    if (relativeTargetPos.x < 0f && distFromRightTarget < shortestDistanceRightTarget) {
+                        shortestDistanceRightTarget = distFromRightTarget;
+                        RightLockTarget = _AvailableTargets[i];
+                    }
                 }
             }
         }

@@ -117,6 +117,7 @@ namespace New {
             UpdateBlackboard();
             LocomotionStateMachine.CurrentState.Update();
             ActionStateMachine.CurrentState.Update();
+            CameraHandler.Instance.HandleLockOn();
         }
 
         private void FixedUpdate() {
@@ -302,6 +303,20 @@ namespace New {
                 LookInputVector = MoveInputVector.normalized;
             
             IsGrounded = Motor.GroundingStatus.IsStableOnGround;
+
+            if (IsTargetLocked && InputHandler.TargetSnapLeftInput) {
+                InputHandler.UseTargetSnapLeftInput();
+                if (CameraHandler.Instance.LeftLockTarget) {
+                    CameraHandler.Instance.CurrentLockOnTarget = CameraHandler.Instance.LeftLockTarget;
+                }
+            }
+
+            if (IsTargetLocked && InputHandler.TargetSnapRightInput) {
+                InputHandler.UseTargetSnapRightInput();
+                if (CameraHandler.Instance.RightLockTarget) {
+                    CameraHandler.Instance.CurrentLockOnTarget = CameraHandler.Instance.RightLockTarget;
+                }
+            }
         }
         
         // Calculate input direction relative to camera

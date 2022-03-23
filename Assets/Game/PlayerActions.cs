@@ -91,10 +91,19 @@ public partial class @PlayerActions : IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""TargetSnapDirection"",
-                    ""type"": ""Value"",
+                    ""name"": ""LockOnTargetLeft"",
+                    ""type"": ""Button"",
                     ""id"": ""0bba1974-575c-43eb-bc62-59a619e5e365"",
-                    ""expectedControlType"": ""Vector2"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""LockOnTargetRight"",
+                    ""type"": ""Button"",
+                    ""id"": ""3d717493-e793-46f6-a42c-a574ab741db0"",
+                    ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
@@ -355,11 +364,22 @@ public partial class @PlayerActions : IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""35269725-c169-4acf-8ed5-a790242f6bc0"",
-                    ""path"": ""<Gamepad>/rightStick"",
-                    ""interactions"": """",
-                    ""processors"": """",
+                    ""path"": ""<Gamepad>/rightStick/left"",
+                    ""interactions"": ""Tap"",
+                    ""processors"": ""AxisDeadzone"",
                     ""groups"": ""Gamepad"",
-                    ""action"": ""TargetSnapDirection"",
+                    ""action"": ""LockOnTargetLeft"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""d9ec3d67-bce6-4eba-9c28-ee61547ebab6"",
+                    ""path"": ""<Gamepad>/rightStick/right"",
+                    ""interactions"": ""Tap"",
+                    ""processors"": ""AxisDeadzone"",
+                    ""groups"": ""Gamepad"",
+                    ""action"": ""LockOnTargetRight"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -954,7 +974,8 @@ public partial class @PlayerActions : IInputActionCollection2, IDisposable
         m_Game_Roll = m_Game.FindAction("Roll", throwIfNotFound: true);
         m_Game_Reset = m_Game.FindAction("Reset", throwIfNotFound: true);
         m_Game_LockTarget = m_Game.FindAction("LockTarget", throwIfNotFound: true);
-        m_Game_TargetSnapDirection = m_Game.FindAction("TargetSnapDirection", throwIfNotFound: true);
+        m_Game_LockOnTargetLeft = m_Game.FindAction("LockOnTargetLeft", throwIfNotFound: true);
+        m_Game_LockOnTargetRight = m_Game.FindAction("LockOnTargetRight", throwIfNotFound: true);
         m_Game_AttackLight = m_Game.FindAction("AttackLight", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
@@ -1034,7 +1055,8 @@ public partial class @PlayerActions : IInputActionCollection2, IDisposable
     private readonly InputAction m_Game_Roll;
     private readonly InputAction m_Game_Reset;
     private readonly InputAction m_Game_LockTarget;
-    private readonly InputAction m_Game_TargetSnapDirection;
+    private readonly InputAction m_Game_LockOnTargetLeft;
+    private readonly InputAction m_Game_LockOnTargetRight;
     private readonly InputAction m_Game_AttackLight;
     public struct GameActions
     {
@@ -1047,7 +1069,8 @@ public partial class @PlayerActions : IInputActionCollection2, IDisposable
         public InputAction @Roll => m_Wrapper.m_Game_Roll;
         public InputAction @Reset => m_Wrapper.m_Game_Reset;
         public InputAction @LockTarget => m_Wrapper.m_Game_LockTarget;
-        public InputAction @TargetSnapDirection => m_Wrapper.m_Game_TargetSnapDirection;
+        public InputAction @LockOnTargetLeft => m_Wrapper.m_Game_LockOnTargetLeft;
+        public InputAction @LockOnTargetRight => m_Wrapper.m_Game_LockOnTargetRight;
         public InputAction @AttackLight => m_Wrapper.m_Game_AttackLight;
         public InputActionMap Get() { return m_Wrapper.m_Game; }
         public void Enable() { Get().Enable(); }
@@ -1079,9 +1102,12 @@ public partial class @PlayerActions : IInputActionCollection2, IDisposable
                 @LockTarget.started -= m_Wrapper.m_GameActionsCallbackInterface.OnLockTarget;
                 @LockTarget.performed -= m_Wrapper.m_GameActionsCallbackInterface.OnLockTarget;
                 @LockTarget.canceled -= m_Wrapper.m_GameActionsCallbackInterface.OnLockTarget;
-                @TargetSnapDirection.started -= m_Wrapper.m_GameActionsCallbackInterface.OnTargetSnapDirection;
-                @TargetSnapDirection.performed -= m_Wrapper.m_GameActionsCallbackInterface.OnTargetSnapDirection;
-                @TargetSnapDirection.canceled -= m_Wrapper.m_GameActionsCallbackInterface.OnTargetSnapDirection;
+                @LockOnTargetLeft.started -= m_Wrapper.m_GameActionsCallbackInterface.OnLockOnTargetLeft;
+                @LockOnTargetLeft.performed -= m_Wrapper.m_GameActionsCallbackInterface.OnLockOnTargetLeft;
+                @LockOnTargetLeft.canceled -= m_Wrapper.m_GameActionsCallbackInterface.OnLockOnTargetLeft;
+                @LockOnTargetRight.started -= m_Wrapper.m_GameActionsCallbackInterface.OnLockOnTargetRight;
+                @LockOnTargetRight.performed -= m_Wrapper.m_GameActionsCallbackInterface.OnLockOnTargetRight;
+                @LockOnTargetRight.canceled -= m_Wrapper.m_GameActionsCallbackInterface.OnLockOnTargetRight;
                 @AttackLight.started -= m_Wrapper.m_GameActionsCallbackInterface.OnAttackLight;
                 @AttackLight.performed -= m_Wrapper.m_GameActionsCallbackInterface.OnAttackLight;
                 @AttackLight.canceled -= m_Wrapper.m_GameActionsCallbackInterface.OnAttackLight;
@@ -1110,9 +1136,12 @@ public partial class @PlayerActions : IInputActionCollection2, IDisposable
                 @LockTarget.started += instance.OnLockTarget;
                 @LockTarget.performed += instance.OnLockTarget;
                 @LockTarget.canceled += instance.OnLockTarget;
-                @TargetSnapDirection.started += instance.OnTargetSnapDirection;
-                @TargetSnapDirection.performed += instance.OnTargetSnapDirection;
-                @TargetSnapDirection.canceled += instance.OnTargetSnapDirection;
+                @LockOnTargetLeft.started += instance.OnLockOnTargetLeft;
+                @LockOnTargetLeft.performed += instance.OnLockOnTargetLeft;
+                @LockOnTargetLeft.canceled += instance.OnLockOnTargetLeft;
+                @LockOnTargetRight.started += instance.OnLockOnTargetRight;
+                @LockOnTargetRight.performed += instance.OnLockOnTargetRight;
+                @LockOnTargetRight.canceled += instance.OnLockOnTargetRight;
                 @AttackLight.started += instance.OnAttackLight;
                 @AttackLight.performed += instance.OnAttackLight;
                 @AttackLight.canceled += instance.OnAttackLight;
@@ -1279,7 +1308,8 @@ public partial class @PlayerActions : IInputActionCollection2, IDisposable
         void OnRoll(InputAction.CallbackContext context);
         void OnReset(InputAction.CallbackContext context);
         void OnLockTarget(InputAction.CallbackContext context);
-        void OnTargetSnapDirection(InputAction.CallbackContext context);
+        void OnLockOnTargetLeft(InputAction.CallbackContext context);
+        void OnLockOnTargetRight(InputAction.CallbackContext context);
         void OnAttackLight(InputAction.CallbackContext context);
     }
     public interface IUIActions
