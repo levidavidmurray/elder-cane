@@ -39,6 +39,17 @@ public class CharacterAnimationListener : MonoBehaviour {
         MasterAudio.PlaySound3DAtTransformAndForget("FootstepsRegular", transform);
         _LastFootIndexPlayed = footIndex;
     }
+
+    public void AttackTrailStart() {
+        print("AttackTrailStart");
+        MasterAudio.PlaySoundAndForget("StickAttack");
+        _PlayerBehaviour.AttackTrail.emitting = true;
+    }
+
+    public void AttackTrailStop() {
+        print("AttackTrailStop");
+        _PlayerBehaviour.AttackTrail.emitting = false;
+    }
     
     /************************************************************************************************************************/
     

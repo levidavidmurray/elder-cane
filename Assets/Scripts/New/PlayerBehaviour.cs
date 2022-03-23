@@ -25,6 +25,7 @@ namespace New {
         public float OrientationSharpness = 10f;
         public float StableMovementSharpness = 15f;
         public AvatarMask ActionMask;
+        public TrailRenderer AttackTrail;
         
         // Camera
         public Transform CameraTransform;
