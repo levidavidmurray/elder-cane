@@ -125,22 +125,14 @@ namespace EC.Control {
         public void OnLockTarget(InputAction.CallbackContext context) {
             OnLockTargetCb?.Invoke(context);
         }
+
+        public void OnLockTargetSnapLeft(InputAction.CallbackContext context) {
+            TargetSnapLeftInput = true;
+        }
         
-        // TODO: Get this to work
-        // public void OnTargetSnapDirection(InputAction.CallbackContext context) {
-        //     var snapDir = context.ReadValue<Vector2>();
-        //     
-        //     if (snapDir.magnitude < snapDirectionMagnitudeThreshold) return;
-        //     
-        //     if (Vector2.Dot(snapDir, snapDirection) >= 1 - snapDirectionRepeatDotThreshold) {
-        //         print($"Ignoring similar direction");
-        //         return;
-        //     }
-        //     
-        //     snapAttempt = true;
-        //     snapDirectionStartTime = Time.time;
-        //     snapDirection = snapDir;
-        // }
+        public void OnLockTargetSnapRight(InputAction.CallbackContext context) {
+            TargetSnapRightInput = true;
+        }
         
         #endregion
         
@@ -166,9 +158,8 @@ namespace EC.Control {
             EnableAction(GameActions.Roll, OnRoll);
             EnableAction(GameActions.LockTarget, OnLockTarget, InputActionEvent.Performed);
             EnableAction(GameActions.AttackLight, OnAttackLight);
-            EnableAction(GameActions.LockOnTargetLeft, _ => TargetSnapLeftInput = true, InputActionEvent.Performed);
-            EnableAction(GameActions.LockOnTargetRight, _ => TargetSnapRightInput = true, InputActionEvent.Performed);
-            // EnableAction(GameActions.TargetSnapDirection, OnTargetSnapDirection);
+            EnableAction(GameActions.LockOnTargetLeft, OnLockTargetSnapLeft, InputActionEvent.Performed);
+            EnableAction(GameActions.LockOnTargetRight, OnLockTargetSnapRight, InputActionEvent.Performed);
         }
         
         private void EnableAction(InputAction action, Action<InputAction.CallbackContext> actionCb, InputActionEvent actionEvent = InputActionEvent.All) {

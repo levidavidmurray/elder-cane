@@ -80,7 +80,8 @@ namespace New {
         private CameraViewTargetSelector _CameraViewTargetSelector;
 
         public const int _BaseLayer = 0;
-        public const int _ActionLayer = 1;
+        public const int _ActionUpperLayer = 1;
+        public const int _ActionLayer = 2;
 
         /************************************************************************************************************************/
 
@@ -99,7 +100,9 @@ namespace New {
             
             TargetLockGroup.AddMember(CameraTarget, 1f, 2f);
             
-            Animancer.Layers[_ActionLayer].SetMask(ActionMask);
+            Animancer.Layers[_ActionUpperLayer].SetDebugName("Action Upper Layer");
+            Animancer.Layers[_ActionUpperLayer].SetMask(ActionMask);
+            
             Animancer.Layers[_ActionLayer].SetDebugName("Action Layer");
             
             InitializeInputCallbacks();
@@ -114,10 +117,10 @@ namespace New {
 
         private void Update()
         {
+            CameraHandler.Instance.HandleLockOn();
             UpdateBlackboard();
             LocomotionStateMachine.CurrentState.Update();
             ActionStateMachine.CurrentState.Update();
-            CameraHandler.Instance.HandleLockOn();
         }
 
         private void FixedUpdate() {
@@ -252,7 +255,6 @@ namespace New {
 
             InputHandler.OnLockTargetCb += _ => {
                 if (!_LockedTarget) {
-                    CameraHandler.Instance.HandleLockOn();
                     LockTarget(CameraHandler.Instance.NearestLockOnTarget);
                 }
                 else {
@@ -304,16 +306,16 @@ namespace New {
             
             IsGrounded = Motor.GroundingStatus.IsStableOnGround;
 
-            if (IsTargetLocked && InputHandler.TargetSnapLeftInput) {
+            if (InputHandler.TargetSnapLeftInput) {
                 InputHandler.UseTargetSnapLeftInput();
-                if (CameraHandler.Instance.LeftLockTarget) {
+                if (IsTargetLocked && CameraHandler.Instance.LeftLockTarget) {
                     CameraHandler.Instance.CurrentLockOnTarget = CameraHandler.Instance.LeftLockTarget;
                 }
             }
 
-            if (IsTargetLocked && InputHandler.TargetSnapRightInput) {
+            if (InputHandler.TargetSnapRightInput) {
                 InputHandler.UseTargetSnapRightInput();
-                if (CameraHandler.Instance.RightLockTarget) {
+                if (IsTargetLocked && CameraHandler.Instance.RightLockTarget) {
                     CameraHandler.Instance.CurrentLockOnTarget = CameraHandler.Instance.RightLockTarget;
                 }
             }

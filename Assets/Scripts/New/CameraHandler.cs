@@ -19,10 +19,19 @@ namespace New {
         public float _CameraCollisionOffset = 0.2f;
         public float _MinCollisionOffset = 0.2f;
         public float _MaxLockOnDist = 30f;
+        public float _ViewableAngle = 50f;
+        public float _MaxDistForLookPercent = 10f;
 
         public Transform CurrentLockOnTarget;
         public Transform LeftLockTarget;
         public Transform RightLockTarget;
+
+        [Foldout("Debug", styled = true)]
+        public Material TargetDefaultMat;
+        public Material TargetNearestMat;
+        public Material TargetAvailableMat;
+        public Material TargetLockedMat;
+        
         public bool IsLockedOn => CurrentLockOnTarget != null;
 
         private Transform _MyTransform;
@@ -90,9 +99,14 @@ namespace New {
         }
 
         public void HandleLockOn() {
+            _AvailableTargets.Clear();
+            LeftLockTarget = null;
+            RightLockTarget = null;
+            
             float shortestDistance = Mathf.Infinity;
             float shortestDistanceLeftTarget = Mathf.Infinity;
             float shortestDistanceRightTarget = Mathf.Infinity;
+            float highestLookPercentage = 0f;
 
             Collider[] colliders = Physics.OverlapSphere(_TargetTransform.position, 26);
 
@@ -105,36 +119,72 @@ namespace New {
                 float distFromTarget = Vector3.Distance(_TargetTransform.position, col.transform.position);
                 float viewableAngle = Vector3.Angle(lockTargetDir, _CameraTransform.forward);
 
-                bool isViewable = viewableAngle > -50f && viewableAngle < 50f;
-                if (col.transform.root != _TargetTransform.root && isViewable && distFromTarget <= _MaxLockOnDist) {
-                    _AvailableTargets.Add(col.transform);
+                bool isViewable = viewableAngle > -_ViewableAngle && viewableAngle < _ViewableAngle;
+                if (col.transform.root != _TargetTransform.root) {
+                    if (isViewable && distFromTarget <= _MaxLockOnDist) {
+                        _AvailableTargets.Add(col.transform);
+                        col.transform.GetComponent<MeshRenderer>().material = TargetAvailableMat;
+                    }
+                    else {
+                        col.transform.GetComponent<MeshRenderer>().material = TargetDefaultMat;
+                    }
                 }
             }
-
+            
             for (int i = 0; i < _AvailableTargets.Count; i++) {
+                Transform target = _AvailableTargets[i];
                 float distFromTarget = Vector3.Distance(_TargetTransform.position, _AvailableTargets[i].position);
+                
+                var camDir = _CameraTransform.forward;
+                var dirToTarget = target.position - _CameraTransform.position;
+                // Calculate how close the target is to the camera's look direction (is player looking at target?)
+                var lookPercentage = Vector3.Dot(camDir.normalized, dirToTarget.normalized);
                 
                 if (distFromTarget < shortestDistance) {
                     shortestDistance = distFromTarget;
-                    NearestLockOnTarget = _AvailableTargets[i];
+                    NearestLockOnTarget = target;
+                }
+
+                // Only use look percentage for target lock if target is within range
+                // This prevents locking onto targets that are much further away but happen to be
+                // closer to the camera direction
+                if (!IsLockedOn && lookPercentage > highestLookPercentage && distFromTarget < _MaxDistForLookPercent) {
+                    highestLookPercentage = lookPercentage;
+                    NearestLockOnTarget = target;
                 }
 
                 if (IsLockedOn) {
-                    var target = _AvailableTargets[i];
-                    Vector3 relativeTargetPos = CurrentLockOnTarget.InverseTransformPoint(target.position);
-                    float distFromLeftTarget = CurrentLockOnTarget.position.x - target.position.x;
-                    float distFromRightTarget = CurrentLockOnTarget.position.x + target.position.x;
+                    Vector3 relativeTargetPos = _TargetTransform.InverseTransformPoint(target.position);
+                    float distFromLeftTarget = 1000f; // CurrentLockOnTarget.position.x - target.position.x;
+                    float distFromRightTarget = 1000f; // CurrentLockOnTarget.position.x + target.position.x;
 
-                    if (relativeTargetPos.x > 0f && distFromLeftTarget < shortestDistanceLeftTarget) {
+                    if (target == CurrentLockOnTarget) continue;
+                    
+                    if (relativeTargetPos.x < 0f) {
+                        distFromLeftTarget = Vector3.Distance(CurrentLockOnTarget.position, target.position);
+                    }
+                    else if (relativeTargetPos.x > 0f) {
+                        distFromRightTarget = Vector3.Distance(CurrentLockOnTarget.position, target.position);
+                    }
+                    
+                    if (relativeTargetPos.x < 0f && distFromLeftTarget < shortestDistanceLeftTarget) {
                         shortestDistanceLeftTarget = distFromLeftTarget;
                         LeftLockTarget = _AvailableTargets[i];
                     }
                     
-                    if (relativeTargetPos.x < 0f && distFromRightTarget < shortestDistanceRightTarget) {
+                    if (relativeTargetPos.x > 0f && distFromRightTarget < shortestDistanceRightTarget) {
                         shortestDistanceRightTarget = distFromRightTarget;
                         RightLockTarget = _AvailableTargets[i];
                     }
                 }
+            }
+
+            if (NearestLockOnTarget) {
+                NearestLockOnTarget.GetComponent<MeshRenderer>().material = TargetNearestMat;
+            }
+            
+            if (CurrentLockOnTarget) {
+                CurrentLockOnTarget.GetComponent<MeshRenderer>().material = TargetLockedMat;
             }
         }
         

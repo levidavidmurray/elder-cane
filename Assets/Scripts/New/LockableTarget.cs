@@ -11,12 +11,10 @@ public class LockableTarget : MonoBehaviour {
     /************************************************************************************************************************/
     
     private void OnBecameVisible() {
-        print($"{transform.name} VISIBLE");
         ViewTargetSelector.AddTarget(transform);
     }
 
     private void OnBecameInvisible() {
-        print($"INVISIBLE {transform.name}");
         ViewTargetSelector.RemoveTarget(transform);
     }
     

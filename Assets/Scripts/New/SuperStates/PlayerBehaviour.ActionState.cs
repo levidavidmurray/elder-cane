@@ -16,7 +16,8 @@ namespace New {
             public override void OnEnterState() {
                 base.OnEnterState();
                 StateMachine = Instance.ActionStateMachine;
-                AnimLayer = Instance.Animancer.Layers[_ActionLayer];
+                int layerIndex = Instance.MoveInput.magnitude > 0 ? _ActionUpperLayer : _ActionLayer;
+                AnimLayer = Instance.Animancer.Layers[layerIndex];
                 
                 AnimLayer.StartFade(1);
             }
