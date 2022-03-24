@@ -417,6 +417,8 @@ MonoBehaviour:
   _PivotSpeed: 0.03
   _MinPivot: -35
   _MaxPivot: 35
+  _MinPivotLocked: -20
+  _MaxPivotLocked: 20
   _CameraSphereRadius: 0.2
   _CameraCollisionOffset: 0.2
   _MinCollisionOffset: 0.2
@@ -430,6 +432,8 @@ MonoBehaviour:
   TargetNearestMat: {fileID: 2100000, guid: b5d37034655e044478702ecec7801977, type: 2}
   TargetAvailableMat: {fileID: 2100000, guid: 681573fee8b29084f981dbffaa365593, type: 2}
   TargetLockedMat: {fileID: 2100000, guid: 18b16c388d99c134690dd489346a8d08, type: 2}
+  DisablePositionHandler: 0
+  DisableRotationHandler: 0
 --- !u!1 &251587618
 GameObject:
   m_ObjectHideFlags: 3
@@ -1466,7 +1470,7 @@ MonoBehaviour:
   playlistsExpanded: 1
   musicSpatialBlendType: 0
   musicSpatialBlend: 0
-  mixerSpatialBlendType: 1
+  mixerSpatialBlendType: 0
   mixerSpatialBlend: 1
   groupPlayType: 0
   defaultGroupPlayType: 0
@@ -1590,7 +1594,7 @@ MonoBehaviour:
     IsEditing: 0
     IsTemporary: 0
     ProspectiveName: '[Uncategorized]'
-  frames: 24607
+  frames: 45200
   showUnityMixerGroupAssignment: 1
 --- !u!4 &563013883
 Transform:
@@ -2401,7 +2405,7 @@ MonoBehaviour:
   audLocation: 0
   resourceFileName: 
   original_pitch: 1
-  original_volume: 0
+  original_volume: 1
   isExpanded: 0
   isChecked: 1
   useFades: 0
@@ -2611,7 +2615,7 @@ MonoBehaviour:
   audLocation: 0
   resourceFileName: 
   original_pitch: 1
-  original_volume: 1
+  original_volume: 0
   isExpanded: 0
   isChecked: 1
   useFades: 0
@@ -2831,7 +2835,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db10a6d491569a8419b6f5e1bffc5243, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  busIndex: 2
+  busIndex: 0
   spatialBlendType: 1
   spatialBlend: 1
   groupPlayType: 0
@@ -2885,7 +2889,7 @@ MonoBehaviour:
   soundPlayedEventActive: 0
   soundPlayedCustomEvent: 
   willCleanUpDelegatesAfterStop: 1
-  frames: 4568
+  frames: 6643
 --- !u!1 &997687064
 GameObject:
   m_ObjectHideFlags: 0
@@ -11971,7 +11975,7 @@ MonoBehaviour:
   curFadeMode: 0
   curPitchMode: 0
   curDetectEndMode: 0
-  frames: 1050
+  frames: 1654
 --- !u!82 &1899672160
 AudioSource:
   m_ObjectHideFlags: 0
@@ -12472,7 +12476,7 @@ MonoBehaviour:
   curFadeMode: 0
   curPitchMode: 0
   curDetectEndMode: 0
-  frames: 808
+  frames: 1284
 --- !u!82 &1952287645
 AudioSource:
   m_ObjectHideFlags: 0
@@ -12784,7 +12788,7 @@ MonoBehaviour:
   playlistStartedCustomEvent: 
   playlistEndedEventExpanded: 0
   playlistEndedCustomEvent: 
-  _frames: 221954
+  _frames: 285708
 --- !u!82 &2042330501
 AudioSource:
   m_ObjectHideFlags: 0
@@ -24574,9 +24578,14 @@ MonoBehaviour:
     _RollAnim:
       _FadeDuration: 0.25
       _Events:
-        _NormalizedTimes: []
+        _NormalizedTimes:
+        - 0.31510994
+        - 0.73387
+        - NaN
         _Callbacks: []
-        _Names: []
+        _Names:
+        - PlaySfx
+        - CanJump
       _Speed: 1
       _Animations:
       - {fileID: 7400000, guid: d21c3de9b6a074f4a84fbaf49e2157c9, type: 3}
@@ -24591,8 +24600,9 @@ MonoBehaviour:
   _EmptyState:
     _FadeSpeed: 0.25
   _AttackState:
+    _MoveSpeed: 0.5
     _FadeSpeed: 0.25
-    _ComboxIndex: 0
+    _ComboIndex: 0
     _AttackCombo0:
     - Clip: {fileID: 7400000, guid: b7c7310df15e3da4398ecbbc8edd48c5, type: 2}
       Speed: 1.75
@@ -24605,6 +24615,34 @@ MonoBehaviour:
       Speed: 1.75
     - Clip: {fileID: 7400000, guid: b95dbb52748c3ce4ebf82b1315318c1d, type: 2}
       Speed: 1.6
+    _AttackAnim:
+      _FadeDuration: 0.25
+      _Events:
+        _NormalizedTimes: []
+        _Callbacks: []
+        _Names: []
+      _Speed: 1
+      _Animations:
+      - {fileID: 7400000, guid: b7c7310df15e3da4398ecbbc8edd48c5, type: 2}
+      - {fileID: 7400000, guid: aff209f68402b2348b03b792e0d84911, type: 2}
+      - {fileID: 7400000, guid: fc65ba507fcb6bd4f83fdea32a47004f, type: 2}
+      - {fileID: 7400000, guid: 2b3997565f78a814c942f2126fc38642, type: 2}
+      - {fileID: 7400000, guid: b95dbb52748c3ce4ebf82b1315318c1d, type: 2}
+      _Speeds:
+      - 1.75
+      - 1.25
+      - 1.75
+      - 1.75
+      - 1.6
+      _SynchronizeChildren: 
+      _Thresholds:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      _DefaultParameter: 0
+      _ExtrapolateSpeed: 1
 --- !u!114 &6177337246039337434
 MonoBehaviour:
   m_ObjectHideFlags: 0

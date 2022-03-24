@@ -63,8 +63,10 @@ namespace New {
                     
                     return;
                 }
-                
-                Instance.ResetOrientationMethod();
+
+                if (StateMachine.CurrentState == this) {
+                    Instance.ResetOrientationMethod();
+                }
 
                 if (Instance.IsTargetLocked) {
                     animParam = Instance.MoveInput;

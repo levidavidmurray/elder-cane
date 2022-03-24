@@ -24,6 +24,8 @@ namespace New {
                     return;
                 }
 
+                if (this == Instance._RollState) return;
+
                 if (Instance.IsJumping) {
                     StateMachine.TrySetState(Instance._JumpState);
                     return;
@@ -31,6 +33,12 @@ namespace New {
 
                 if (Instance.IsRolling) {
                     StateMachine.TrySetState(Instance._RollState);
+                    return;
+                }
+
+                if (Instance.IsAttacking) {
+                    StateMachine.TrySetState(Instance._AttackState);
+                    return;
                 }
                 
             }

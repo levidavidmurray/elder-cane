@@ -22,9 +22,9 @@ namespace New {
             public override void Update() {
                 base.Update();
 
-                if (Instance.IsAttacking) {
-                    StateMachine.TrySetState(Instance._AttackState);
-                }
+                // if (Instance.IsAttacking) {
+                //     StateMachine.TrySetState(Instance._AttackState);
+                // }
                 
             }
 

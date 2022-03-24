@@ -18,30 +18,50 @@ namespace New {
             /************************************************************************************************************************/
 
             private MoveState _MoveState;
+            private bool _IsInitialized;
+            private bool _CanJump;
             
             /************************************************************************************************************************/
 
             public override void OnEnterState() {
                 base.OnEnterState();
                 
-                Instance.OnEnterRollState(this);
-
-                if (!_MoveState) {
-                    _MoveState = Instance._MoveState;
-                }
+                Instance.InputHandler.UseRollInput();
                 
                 Instance.Animancer.Play(_RollAnim);
-                MasterAudio.PlaySound3DAtTransformAndForget("Roll", Instance.transform);
-                
-                _RollAnim.State.Events.OnEnd = () => {
-                    StateMachine.TrySetState(Instance._IdleState);
-                };
+                _CanJump = false;
 
+                if (!_IsInitialized) {
+                    _MoveState = Instance._MoveState;
+                    _RollAnim.State.Events.SetCallback("PlaySfx", () => {
+                        MasterAudio.PlaySound3DAtTransformAndForget("Roll", Instance.transform);
+                    });
+                    
+                    _RollAnim.State.Events.SetCallback("CanJump", () => _CanJump = true);
+                    
+                    _RollAnim.State.Events.OnEnd = () => {
+                        StateMachine.TrySetState(Instance._IdleState);
+                    };
+
+                    _IsInitialized = true;
+                }
+                
+                Instance.OrientationMethod = OrientationMethodType.TowardsMovement;
+            }
+
+            public override void OnExitState() {
+                base.OnExitState();
+                Instance.ResetOrientationMethod();
             }
 
             public override void Update() {
                 base.Update();
+                Instance.InputHandler.UseRollInput();
                 _RollAnim.State.Parameter = Instance.MoveInput.magnitude;
+
+                if (Instance.IsJumping && _CanJump) {
+                    StateMachine.TrySetState(Instance._JumpState);
+                }
             }
 
             public override void UpdateVelocity(ref Vector3 currentVelocity, float deltaTime) {

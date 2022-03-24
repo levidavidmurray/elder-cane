@@ -2,6 +2,7 @@
 using Animancer;
 using Animancer.FSM;
 using Cinemachine;
+using DarkTonic.MasterAudio;
 using EC.Control;
 using KinematicCharacterController;
 using UnityEngine;
@@ -38,7 +39,10 @@ namespace New {
         
         #region Blackboard
         
-        public Vector2 MoveInput { get; private set; }
+        // Used for actual planar movement
+        public Vector2 MoveInput { get; private set; } 
+        // Used to detect input direction when move input is locked
+        public Vector2 MoveInputDirection { get; private set; }
         public Vector3 MoveInputVector { get; private set; }
         public Vector3 LookInputVector { get; private set; }
         public Vector3 VelocityLastTick { get; private set; }
@@ -48,6 +52,7 @@ namespace New {
         public bool IsRolling { get; private set; }
         public bool IsAttacking { get; private set; }
         public bool IsTargetLocked { get; private set; }
+        public bool IsMoveInputLocked { get; private set; }
         
         #endregion
         
@@ -78,7 +83,6 @@ namespace New {
         private Vector3 _SpawnPosition;
         private bool _FreezeVelocityThisTick;
         private Transform _LockedTarget;
-        private CameraViewTargetSelector _CameraViewTargetSelector;
 
         public const int _BaseLayer = 0;
         public const int _ActionUpperLayer = 1;
@@ -97,7 +101,6 @@ namespace New {
             Instance = this;
             
             _SpawnPosition = transform.position;
-            _CameraViewTargetSelector = GetComponent<CameraViewTargetSelector>();
             
             TargetLockGroup.AddMember(CameraTarget, 1f, 2f);
             
@@ -237,13 +240,27 @@ namespace New {
             InputHandler.UseJumpInput();
         }
         
-        public void OnEnterRollState(GroundedState state) {
-            InputHandler.UseRollInput();
-        }
-
         public void ResetOrientationMethod() {
             OrientationMethod =
                 IsTargetLocked ? OrientationMethodType.TowardsCamera : OrientationMethodType.TowardsMovement;
+        }
+
+        public void LockMoveInput() {
+            IsMoveInputLocked = true;
+        }
+
+        public void UnlockMoveInput() {
+            IsMoveInputLocked = false;
+        }
+
+        public void OnAttackTrailStart() {
+            MasterAudio.PlaySoundAndForget("StickAttack");
+            AttackTrail.emitting = true;
+        }
+
+        public void OnAttackTrailStop() {
+            AttackTrail.emitting = false;
+            UnlockMoveInput();
         }
         
         #endregion
@@ -290,7 +307,8 @@ namespace New {
         }
         
         private void UpdateBlackboard() {
-            MoveInput = InputHandler.MoveInput;
+            MoveInput = IsMoveInputLocked ? Vector2.zero : InputHandler.MoveInput;
+            MoveInputDirection = InputHandler.MoveInput;
             IsJumping = InputHandler.JumpInput;
             IsSprinting = InputHandler.SprintInput;
             IsRolling = InputHandler.RollInput;
@@ -299,11 +317,19 @@ namespace New {
             
             Vector3 cameraPlanarDirection = Vector3.zero;
             MoveInputVector = CalculateMoveInputVector(MoveInput, ref cameraPlanarDirection);
-            
-            if (OrientationMethod == OrientationMethodType.TowardsCamera) 
+
+            // Movement locked while attacking -- Allow turning
+            var lookInputDir = MoveInputVector;
+            if (IsMoveInputLocked) {
+                lookInputDir = CalculateMoveInputVector(MoveInputDirection, ref cameraPlanarDirection);
+            }
+
+            if (OrientationMethod == OrientationMethodType.TowardsCamera) {
                 LookInputVector = cameraPlanarDirection;
-            else
-                LookInputVector = MoveInputVector.normalized;
+            }
+            else {
+                LookInputVector = lookInputDir.normalized;
+            }
             
             IsGrounded = Motor.GroundingStatus.IsStableOnGround;
 

@@ -41,14 +41,11 @@ public class CharacterAnimationListener : MonoBehaviour {
     }
 
     public void AttackTrailStart() {
-        print("AttackTrailStart");
-        MasterAudio.PlaySoundAndForget("StickAttack");
-        _PlayerBehaviour.AttackTrail.emitting = true;
+        _PlayerBehaviour.OnAttackTrailStart();
     }
 
     public void AttackTrailStop() {
-        print("AttackTrailStop");
-        _PlayerBehaviour.AttackTrail.emitting = false;
+        _PlayerBehaviour.OnAttackTrailStop();
     }
     
     /************************************************************************************************************************/

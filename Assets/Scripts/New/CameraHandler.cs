@@ -15,12 +15,15 @@ namespace New {
         public float _PivotSpeed = 0.03f;
         public float _MinPivot = -35;
         public float _MaxPivot = 35;
+        public float _MinPivotLocked = -20f;
+        public float _MaxPivotLocked = 20f;
         public float _CameraSphereRadius = 0.2f;
         public float _CameraCollisionOffset = 0.2f;
         public float _MinCollisionOffset = 0.2f;
         public float _MaxLockOnDist = 30f;
         public float _ViewableAngle = 50f;
         public float _MaxDistForLookPercent = 10f;
+        
 
         public Transform CurrentLockOnTarget;
         public Transform LeftLockTarget;
@@ -31,10 +34,11 @@ namespace New {
         public Material TargetNearestMat;
         public Material TargetAvailableMat;
         public Material TargetLockedMat;
+        public bool DisablePositionHandler;
+        public bool DisableRotationHandler;
         
         public bool IsLockedOn => CurrentLockOnTarget != null;
 
-        private Transform _MyTransform;
         private Vector3 _CameraTransformPosition;
         private Vector3 _CameraFollowVelocity = Vector3.zero;
         private LayerMask _IgnoreLayers;
@@ -49,20 +53,21 @@ namespace New {
 
         private void Awake() {
             Instance = this;
-            _MyTransform = transform;
             _DefaultPosition = _CameraTransform.localPosition.z;
             _IgnoreLayers = ~(1 << 2 | 1 << 8 | 1 << 9 | 1 << 10);
         }
 
         public void FollowTarget(float delta) {
-            Vector3 targetPos = Vector3.SmoothDamp(_MyTransform.position, _TargetTransform.position,
+            if (DisablePositionHandler) return;
+            Vector3 targetPos = Vector3.SmoothDamp(transform.position, _TargetTransform.position,
                 ref _CameraFollowVelocity, delta / _FollowSpeed);
-            _MyTransform.position = targetPos;
+            transform.position = targetPos;
 
             HandleCameraCollision(delta);
         }
 
         public void HandleCameraRotation(float delta, Vector2 lookInput) {
+            if (DisableRotationHandler) return;
             if (IsLockedOn) {
                 float velocity = 0;
                 Vector3 dir = CurrentLockOnTarget.position - transform.position;
@@ -78,6 +83,7 @@ namespace New {
                 targetRotation = Quaternion.LookRotation(dir);
                 Vector3 eulerAngles = targetRotation.eulerAngles;
                 eulerAngles.y = 0;
+                eulerAngles.x = Mathf.Clamp(eulerAngles.x, _MinPivotLocked, _MaxPivotLocked);
                 _CameraPivotTransform.localEulerAngles = eulerAngles;
             }
             else {
@@ -88,7 +94,7 @@ namespace New {
                 Vector3 rotation = Vector3.zero;
                 rotation.y = _LookAngle;
                 Quaternion targetRotation = Quaternion.Euler(rotation);
-                _MyTransform.rotation = targetRotation;
+                transform.rotation = targetRotation;
 
                 rotation = Vector3.zero;
                 rotation.x = _PivotAngle;
