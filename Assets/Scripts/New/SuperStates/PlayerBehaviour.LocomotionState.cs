@@ -17,7 +17,8 @@ namespace New {
             
             /************************************************************************************************************************/
 
-            public override void OnEnterState() {
+            protected override void Initialize() {
+                base.Initialize();
                 Motor = Instance.Motor;
                 StateMachine = Instance.LocomotionStateMachine;
             }

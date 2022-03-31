@@ -19,29 +19,37 @@ namespace New {
             [SerializeField] private float _FadeSpeed = 0.25f;
             [SerializeField] int _ComboIndex = 0;
 
-            [SerializeField] private AnimationClipData[] _AttackCombo0;
-            [SerializeField] private AnimationClipData[] _AttackCombo1;
-            [SerializeField] private LinearMixerTransition _AttackAnim;
+            [SerializeField] private ClipTransition[] _NewAttackCombo0;
+            [SerializeField] private ClipTransition[] _NewAttackCombo1;
             
             /************************************************************************************************************************/
 
             private AnimancerState _AnimState;
-            private int _CurAttackIndex;
-            private int _AttackAnimIndex;
-            private bool _IsInitialized;
+            private int _CurInitIndex;
+            private int _CurComboAttackIndex; // Index in current combo array
+            private int _CurAttackIndex; // Index of attack in total attacks
+
+            private int _AttackCount;
             
             /************************************************************************************************************************/
             
             public override bool CanEnterState => Instance.LocomotionStateMachine.CurrentState != Instance._RollState;
 
+            protected override void Initialize() {
+                base.Initialize();
+
+                _AttackCount += _NewAttackCombo0.Length;
+                _AttackCount += _NewAttackCombo1.Length;
+            }
+
             public override void OnEnterState() {
                 base.OnEnterState();
-
+                
+                _CurComboAttackIndex = 0;
                 _CurAttackIndex = 0;
-                _AttackAnimIndex = 0;
                 _ComboIndex = 0;
 
-                HandleAttackOld();
+                HandleAttackNew();
             }
 
             public override void Update() {
@@ -50,76 +58,74 @@ namespace New {
                 if (Instance.IsAttacking) {
 
                     if (Instance.IsMoveInputLocked) return;
+
+                    if (IsLastAttack) {
+                        Instance.InputHandler.UseAttackLightInput();
+                        return;
+                    }
                         
                     _AnimState.Events.OnEnd = () => {
-                        _CurAttackIndex++;
-                        // _AttackAnimIndex++;
-                        // if (_AttackAnimIndex >= _AttackAnim.Animations.Length) {
-                        //     _AttackAnimIndex = 0;
-                        // }
-                        if (_CurAttackIndex >= CurrentComboAnimData.Length) {
+                        
+                        _CurComboAttackIndex++;
+
+                        if (_CurAttackIndex < _AttackCount-1) {
+                            _CurAttackIndex++;
+                        }
+                        
+                        if (_CurComboAttackIndex >= CurrentComboAnimData.Length) {
                             _ComboIndex++;
-                            _CurAttackIndex = 0;
+                            _CurComboAttackIndex = 0;
                         
                             if (_ComboIndex >= 2) {
                                 _ComboIndex = 0;
                             }
                         }
-                        HandleAttackOld();
+                        HandleAttackNew();
                     };
                 }
                 
             }
 
             /************************************************************************************************************************/
+            
+            private bool IsInitialized => _CurInitIndex > _CurAttackIndex;
 
-            private AnimationClipData[] CurrentComboAnimData {
+            private bool IsLastAttack => _CurAttackIndex == _AttackCount - 1;
+
+            private ClipTransition[] CurrentComboAnimData {
                 get {
                     if (_ComboIndex == 0) {
-                        return _AttackCombo0;
+                        return _NewAttackCombo0;
                     }
                     
-                    return _AttackCombo1;
+                    return _NewAttackCombo1;
                 }
             }
 
-            private void HandleAttackOld() {
+            private void HandleAttackNew() {
                 Instance.InputHandler.UseAttackLightInput();
 
-                var animData = CurrentComboAnimData[_CurAttackIndex];
-                _AnimState = Instance.Animancer.Play(animData.Clip, _FadeSpeed);
-                _AnimState.Speed = animData.Speed;
+                var animData = CurrentComboAnimData[_CurComboAttackIndex];
+                _AnimState = Instance.Animancer.Play(animData, _FadeSpeed);
+
+                if (!IsInitialized) {
+                    _AnimState.Events.SetCallback("AttackTrailStart", () => {
+                        Instance.OnAttackTrailStart();
+                    });
+                    _AnimState.Events.SetCallback("AttackTrailStop", () => {
+                        Instance.OnAttackTrailStop();
+                    });
+                    
+                    _CurInitIndex++;
+                }
+
+                if (IsLastAttack) {
+                    Instance.LockMoveInput();
+                }
                 
                 _AnimState.Events.OnEnd = () => {
                     StateMachine.TrySetState(Instance._IdleState);
                 };
-            }
-
-            private void HandleAttack() {
-                // Instance.LockMoveInput();
-                Instance.InputHandler.UseAttackLightInput();
-                // var animData = CurrentComboAnimData[_CurAttackIndex];
-                // _AnimState = Instance.Animancer.Play(animData.Clip, _FadeSpeed);
-                // _AnimState.Speed = animData.Speed;
-                if (!_IsInitialized) {
-                    _AnimState = Instance.Animancer.Play(_AttackAnim, _FadeSpeed);
-                    // _AnimState.Events.SetCallback("AttackTrailStart", () => {
-                    //     print($"AttackTrailStart!");
-                    // });
-                    //
-                    // _AnimState.Events.SetCallback("AttackTrailStop", () => {
-                    //     print($"AttackTrailStop!");
-                    // });
-                    
-                    _AnimState.Events.OnEnd = () => {
-                        StateMachine.TrySetState(Instance._IdleState);
-                    };
-                    
-                    _IsInitialized = true;
-                }
-                
-                _AttackAnim.State.Parameter = _AttackAnimIndex;
-                _AnimState.Play();
             }
 
         }

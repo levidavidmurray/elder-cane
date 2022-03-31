@@ -41,11 +41,11 @@ public class CharacterAnimationListener : MonoBehaviour {
     }
 
     public void AttackTrailStart() {
-        _PlayerBehaviour.OnAttackTrailStart();
+        // _PlayerBehaviour.OnAttackTrailStart();
     }
 
     public void AttackTrailStop() {
-        _PlayerBehaviour.OnAttackTrailStop();
+        // _PlayerBehaviour.OnAttackTrailStop();
     }
     
     /************************************************************************************************************************/

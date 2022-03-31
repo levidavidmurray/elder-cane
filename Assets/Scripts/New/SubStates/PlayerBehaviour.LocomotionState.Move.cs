@@ -17,17 +17,17 @@ namespace New {
             
             /************************************************************************************************************************/
 
-            private bool _IsInitialized;
             private float _DefaultMoveSpeed;
             
             /************************************************************************************************************************/
 
+            protected override void Initialize() {
+                base.Initialize();
+                _DefaultMoveSpeed = _MoveSpeed;
+            }
+
             public override void OnEnterState() {
                 base.OnEnterState();
-
-                if (!_IsInitialized) {
-                    Initialize();
-                }
                 
                 Instance.Animancer.Play(_LockedMoveAnim);
             }
@@ -88,12 +88,6 @@ namespace New {
             }
             
             /************************************************************************************************************************/
-
-            private void Initialize() {
-                _DefaultMoveSpeed = _MoveSpeed;
-
-                _IsInitialized = true;
-            }
             
         }
         

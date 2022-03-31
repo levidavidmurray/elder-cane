@@ -13,13 +13,31 @@ namespace New {
             /************************************************************************************************************************/
 
             protected AnimancerComponent _Animancer => Instance.Animancer;
+            public bool IsInitialized { get; private set; }
             
+            /************************************************************************************************************************/
+
+            public override void OnEnterState() {
+                base.OnEnterState();
+
+                if (!IsInitialized) {
+                    Initialize();
+                }
+            }
+
             /************************************************************************************************************************/
 
             public virtual void Update() { }
             
             public virtual void FixedUpdate() { }
             
+            /************************************************************************************************************************/
+
+            protected virtual void Initialize() {
+                if (IsInitialized) return;
+                IsInitialized = true;
+            }
+
             /************************************************************************************************************************/
 
             protected void log(object message) {
